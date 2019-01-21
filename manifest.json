@@ -2,14 +2,14 @@
   "name": "Open in VLC media player",
   "description": "Adds a context menu item to send audio/video streams directly to VLC media player",
   "author": "Andy Portmen",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "manifest_version": 2,
   "permissions": [
     "storage",
     "tabs",
+    "downloads",
     "contextMenus",
     "nativeMessaging",
-    "downloads",
     "webRequest",
     "<all_urls>"
   ],
@@ -21,7 +21,7 @@
       "common.js"
     ]
   },
-  "homepage_url": "http://add0n.com/open-in.html?from=vlc",
+  "homepage_url": "https://add0n.com/open-in-vlc.html",
   "icons": {
     "16": "data/icons/16.png",
     "19": "data/icons/19.png",
@@ -49,10 +49,5 @@
   },
   "web_accessible_resources": [
     "/data/inject/*"
-  ],
-  "applications": {
-    "gecko": {
-      "id": "{6b954d17-d17c-4a19-8fe6-ee8052a562d6}"
-    }
-  }
+  ]
 }

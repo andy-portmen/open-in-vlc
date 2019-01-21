@@ -3,7 +3,7 @@
 try {
   iframe.remove();
 }
-catch(e) {}
+catch (e) {}
 var iframe;
 
 iframe = document.createElement('iframe');
@@ -23,4 +23,4 @@ iframe.setAttribute('style', `
 `);
 
 document.body.appendChild(iframe);
-iframe.src = chrome.runtime.getURL('data/inject/index.html');
+iframe.src = chrome.runtime.getURL('/data/inject/index.html');

@@ -86,6 +86,7 @@ var toM3U8 = (urls, callback) => chrome.runtime.sendNativeMessage('com.add0n.nod
 }, callback);
 
 var open = (url, native) => {
+  // decode
   if (url.startsWith('https://www.google.') && url.indexOf('&url=') !== -1) {
     url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
   }
@@ -158,6 +159,8 @@ chrome.contextMenus.create({
 });
 
 var tabs = {};
+// clean up
+chrome.tabs.onRemoved.addListener(tabId => delete tabs[tabId]);
 
 function update(tabId) {
   chrome.pageAction.show(tabId);
@@ -184,6 +187,7 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
   urls: ['*://*/*'],
   types: ['main_frame', 'other', 'xmlhttprequest', 'media']
 }, ['responseHeaders']);
+
 chrome.tabs.onUpdated.addListener((id, info, tab) => {
   if (info.url || info.favIconUrl) {
     if (tab.url.startsWith('https://www.youtube.com/watch?v=')) {
@@ -191,8 +195,6 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
     }
   }
 });
-// clean up
-chrome.tabs.onRemoved.addListener(tabId => delete tabs[tabId]);
 
 function copy(tabId, content) {
   if (/Firefox/.test(navigator.userAgent)) {
@@ -302,37 +304,28 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-// FAQs & Feedback
-chrome.storage.local.get({
-  'version': null,
-  'faqs': true,
-  'last-update': 0
-}, prefs => {
-  const version = chrome.runtime.getManifest().version;
-
-  if (prefs.version ? (prefs.faqs && prefs.version !== version) : true) {
-    const now = Date.now();
-    const doUpdate = (now - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
-    chrome.storage.local.set({
-      version,
-      'last-update': doUpdate ? Date.now() : prefs['last-update']
-    }, () => {
-      // do not display the FAQs page if last-update occurred less than 45 days ago.
-      if (doUpdate) {
-        const p = Boolean(prefs.version);
-        chrome.tabs.create({
-          url: chrome.runtime.getManifest().homepage_url + '&version=' + version +
-            '&type=' + (p ? ('upgrade&p=' + prefs.version) : 'install'),
-          active: p === false
-        });
+{
+  const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
+  const {name, version} = getManifest();
+  const page = getManifest().homepage_url;
+  onInstalled.addListener(({reason, previousVersion}) => {
+    chrome.storage.local.get({
+      'faqs': false,
+      'last-update': 0
+    }, prefs => {
+      if (reason === 'install' || (prefs.faqs && reason === 'update')) {
+        const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
+        if (doUpdate && previousVersion !== version) {
+          chrome.tabs.create({
+            url: page + '?version=' + version +
+              (previousVersion ? '&p=' + previousVersion : '') +
+              '&type=' + reason,
+            active: reason === 'install'
+          });
+          chrome.storage.local.set({'last-update': Date.now()});
+        }
       }
     });
-  }
-});
-
-{
-  const {name, version} = chrome.runtime.getManifest();
-  chrome.runtime.setUninstallURL(
-    chrome.runtime.getManifest().homepage_url + '&rd=feedback&name=' + name + '&version=' + version
-  );
+  });
+  setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
 }
