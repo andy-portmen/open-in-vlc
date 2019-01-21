@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #ffecd8;
+      }
+      select {
+        width: 100%;
+        flex:  1;
+        outline: none;
+        border: solid 1px #a5a5a5;
+      }
+      #toolbar {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 0;
+      }
+      input {
+        margin-left: 5px;
+        border: solid 1px #a5a5a5;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <span style="margin-bottom: 5px;">Please select media links among <span id="number">...</span> detected links:</span>
+    <select size=8 multiple></select>
+    <div id="toolbar">
+      <input type="button" value="Close" data-cmd="close-me">
+      <input type="button" value="Open in VLC" data-cmd="open-in">
+    </div>
+    <script src="index.js"></script>
+  </body>
+</html>

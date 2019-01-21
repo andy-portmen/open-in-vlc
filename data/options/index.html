@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Open In VLC media player :: Options</title>
+  <style>
+    body {padding: 10px;}
+    input {width: 100%;}
+  </style>
+</head>
+
+<body>
+  <label>
+    Path to VLC executable:
+    <input type="path" id="path">
+  </label>
+  <p>Example: <code>C:\VLC\vlc.exe</code>.
+  <br>
+  In Windows OS, if path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. In Linux, if the path is not set, it is assumed "vlc" binary can be found in the PATH environment variables. In Mac OS, this option is ignored as <code>open -a VLC</code> command is used.</p>
+
+  <div>
+    <button id="save">Save</button><span id="status"></span>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
