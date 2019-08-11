@@ -1,13 +1,12 @@
 'use strict';
 
 try {
-  iframe.remove();
+  window.iframe.remove();
 }
 catch (e) {}
-var iframe;
 
-iframe = document.createElement('iframe');
-iframe.setAttribute('style', `
+window.iframe = document.createElement('iframe');
+window.iframe.setAttribute('style', `
   border: none;
   position: fixed;
   top: 0;
@@ -22,5 +21,5 @@ iframe.setAttribute('style', `
   z-index: 10000000000;
 `);
 
-document.body.appendChild(iframe);
-iframe.src = chrome.runtime.getURL('/data/inject/index.html');
+document.body.appendChild(window.iframe);
+window.iframe.src = chrome.runtime.getURL('/data/inject/index.html');

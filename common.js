@@ -1,7 +1,7 @@
 
 'use strict';
 
-var Native = function() {
+const Native = function() {
   this.callback = null;
   this.channel = chrome.runtime.connectNative('com.add0n.node');
 
@@ -60,7 +60,7 @@ Native.prototype.exec = function(command, args, callback = function() {}) {
 };
 
 // handle multiple links
-var toM3U8 = (urls, callback) => chrome.runtime.sendNativeMessage('com.add0n.node', {
+const toM3U8 = (urls, callback) => chrome.runtime.sendNativeMessage('com.add0n.node', {
   permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
   args: [urls.join('\n')],
   script: `
@@ -85,7 +85,7 @@ var toM3U8 = (urls, callback) => chrome.runtime.sendNativeMessage('com.add0n.nod
   `
 }, callback);
 
-var open = (url, native) => {
+const open = (url, native) => {
   // decode
   if (url.startsWith('https://www.google.') && url.indexOf('&url=') !== -1) {
     url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
@@ -157,8 +157,13 @@ chrome.contextMenus.create({
   title: 'Send page link to VLC',
   contexts: ['page_action']
 });
+chrome.contextMenus.create({
+  id: 'audio-joiner',
+  title: 'Join Audio Files',
+  contexts: ['page_action']
+});
 
-var tabs = {};
+const tabs = {};
 // clean up
 chrome.tabs.onRemoved.addListener(tabId => delete tabs[tabId]);
 
@@ -240,6 +245,24 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   else if (info.menuItemId === 'page-link') {
     open(tab.url, new Native());
   }
+  else if (info.menuItemId === 'audio-joiner') {
+    chrome.storage.local.get({
+      width: 700,
+      height: 500,
+      left: screen.availLeft + Math.round((screen.availWidth - 700) / 2),
+      top: screen.availTop + Math.round((screen.availHeight - 500) / 2)
+    }, prefs => {
+      console.log(prefs);
+      chrome.windows.create({
+        url: 'data/join/index.html',
+        width: prefs.width,
+        height: prefs.height,
+        left: prefs.left,
+        top: prefs.top,
+        type: 'popup'
+      });
+    });
+  }
   else {
     open(info.srcUrl || info.linkUrl || info.pageUrl, new Native());
   }
@@ -276,9 +299,9 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
       'runAt': 'document_start',
       'allFrames': false,
       'code': `
-        if (iframe) {
-          iframe.remove();
-          iframe = '';
+        if (window.iframe) {
+          window.iframe.remove();
+          window.iframe = '';
         }
       `
     });

@@ -24,10 +24,12 @@
     In Windows, if path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. In Linux, if the path is not set, it is assumed that "vlc" binary can be found in the PATH environment variables. In Mac, this option is ignored since <code>open -a VLC</code> command is used.
   </p>
 
-  <div>
+  <div data-cols="4" id="explore"></div>
+
+  <p>
     <button id="reset">Reset</button>
-    <button id="support">Support Development</button> - <button id="save">Save</button> <span id="status"></span>
-  </div>
+    <button id="support">Support Development</button> - <button id="save">Save</button> <span id="toast"></span>
+  </p>
 
   <script src="index.js"></script>
 </body>

@@ -1,6 +1,6 @@
 'use strict';
 
-var select = document.querySelector('select');
+const select = document.querySelector('select');
 
 chrome.runtime.sendMessage({
   cmd: 'get-links'

@@ -1,6 +1,6 @@
 'use strict';
 
-var info = document.getElementById('status');
+const toast = document.getElementById('toast');
 
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
@@ -12,16 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('save').addEventListener('click', () => {
   const path = document.getElementById('path').value;
   chrome.storage.local.set({path}, () => {
-    info.textContent = 'Options saved.';
-    setTimeout(() => info.textContent = '', 750);
+    toast.textContent = 'Options saved.';
+    setTimeout(() => toast.textContent = '', 750);
   });
 });
 
 // reset
 document.getElementById('reset').addEventListener('click', e => {
   if (e.detail === 1) {
-    info.textContent = 'Double-click to reset!';
-    window.setTimeout(() => info.textContent = '', 750);
+    toast.textContent = 'Double-click to reset!';
+    window.setTimeout(() => toast.textContent = '', 750);
   }
   else {
     localStorage.clear();
