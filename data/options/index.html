@@ -6,7 +6,7 @@
     body {
       min-width: 500px;
     }
-    input {
+    input[type="path"] {
       width: 100%;
       padding: 5px;
       box-sizing: border-box;
@@ -22,6 +22,12 @@
   </p>
   <p>
     In Windows, if path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. In Linux, if the path is not set, it is assumed that "vlc" binary can be found in the PATH environment variables. In Mac, this option is ignored since <code>open -a VLC</code> command is used.
+  </p>
+  <p>
+    <label><input type="checkbox" id="m3u8"> When there are more than one media links, send them all in an M3U8 container at once.</label>
+  </p>
+  <p>
+    <label><input type="checkbox" id="faqs"> Open FAQs page on updates to notify about the recent changes.</label>
   </p>
 
   <div data-cols="4" id="explore"></div>

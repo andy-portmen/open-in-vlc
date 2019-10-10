@@ -4,14 +4,23 @@ const toast = document.getElementById('toast');
 
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
-    path: ''
+    'path': '',
+    'm3u8': true,
+    'faqs': true
   }, prefs => {
     document.getElementById('path').value = prefs.path;
+    document.getElementById('m3u8').checked = prefs.m3u8;
+    document.getElementById('faqs').checked = prefs.faqs;
   });
 });
 document.getElementById('save').addEventListener('click', () => {
   const path = document.getElementById('path').value;
-  chrome.storage.local.set({path}, () => {
+  const m3u8 = document.getElementById('m3u8').checked;
+  const faqs = document.getElementById('faqs').checked;
+  chrome.storage.local.set({
+    path,
+    m3u8
+  }, () => {
     toast.textContent = 'Options saved.';
     setTimeout(() => toast.textContent = '', 750);
   });

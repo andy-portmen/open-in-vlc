@@ -104,13 +104,37 @@ const open = (url, native) => {
       else if (prefs.path) {
         native.exec(prefs.path, [url]);
       }
-      else {
+      else { // Windows
         native.env(res => {
-          const path = res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe'
-            .replace('(x86)', window.navigator.platform === 'Win32' ? '' : '(x86)');
-          chrome.storage.local.set({
-            path
-          }, () => native.exec(path, [url]));
+          const paths = [
+            res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe',
+            res.env['ProgramFiles'] + '\\VideoLAN\\VLC\\vlc.exe'
+          ];
+          chrome.runtime.sendNativeMessage('com.add0n.node', {
+            permissions: ['fs'],
+            args: [...paths],
+            script: `
+              const fs = require('fs');
+              const exist = path => new Promise(resolve => fs.access(path, fs.F_OK, e => {
+                resolve(e ? false : true);
+              }));
+              Promise.all(args.map(exist)).then(d => {
+                push({d});
+                done();
+              }).catch(e => push({e: e.message}));
+            `
+          }, r => {
+            if (!r) {
+              console.warn('native exited', chrome.runtime.lastError);
+            }
+            else if (r && r.e) {
+              console.warn('unexpected error', r.e);
+            }
+            const path = r && r.d[1] ? paths[1] : (res.env['ProgramFiles(x86)'] ? paths[0] : paths[1]);
+            chrome.storage.local.set({
+              path
+            }, () => native.exec(path, [url]));
+          });
         });
       }
     });
@@ -132,11 +156,28 @@ chrome.contextMenus.create({
     '*://www.youtube.com/watch?v=*',
     '*://www.youtube.com/embed/*',
     '*://www.google.com/url?*www.youtube.com%2Fwatch*',
-    '*://*/*.mp3*',
+    '*://*/*.avi*',
     '*://*/*.mp4*',
+    '*://*/*.webm*',
     '*://*/*.flv*',
+    '*://*/*.mov*',
+    '*://*/*.ogv*',
+    '*://*/*.3gp*',
+    '*://*/*.mpg*',
+    '*://*/*.wmv*',
+    '*://*/*.swf*',
     '*://*/*.mkv*',
-    '*://*/*.3gp*'
+    '*://*/*.pcm*',
+    '*://*/*.wav*',
+    '*://*/*.aac*',
+    '*://*/*.ogg*',
+    '*://*/*.wma*',
+    '*://*/*.flac*',
+    '*://*/*.mid*',
+    '*://*/*.mka*',
+    '*://*/*.m4a*',
+    '*://*/*.mp3*',
+    '*://*/*.voc*'
   ]
 });
 chrome.contextMenus.create({
@@ -149,17 +190,22 @@ chrome.contextMenus.create({
 });
 chrome.contextMenus.create({
   id: 'copy-links',
-  title: 'Copy media links to the Clipboard',
+  title: 'Copy Media Links to the Clipboard',
   contexts: ['page_action']
 });
 chrome.contextMenus.create({
   id: 'page-link',
-  title: 'Send page link to VLC',
+  title: 'Send Page Link to VLC',
   contexts: ['page_action']
 });
 chrome.contextMenus.create({
   id: 'audio-joiner',
   title: 'Join Audio Files',
+  contexts: ['page_action']
+});
+chrome.contextMenus.create({
+  id: 'mp3-converter',
+  title: 'Convert to MP3',
   contexts: ['page_action']
 });
 
@@ -208,7 +254,7 @@ function copy(tabId, content) {
     }, granted => granted && chrome.tabs.executeScript(tabId, {
       runAt: 'document_start',
       code: `
-        document.oncopy = (event) => {
+        document.oncopy = event => {
           event.clipboardData.setData('text/plain', '${content}');
           event.preventDefault();
         };
@@ -246,21 +292,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     open(tab.url, new Native());
   }
   else if (info.menuItemId === 'audio-joiner') {
-    chrome.storage.local.get({
-      width: 700,
-      height: 500,
-      left: screen.availLeft + Math.round((screen.availWidth - 700) / 2),
-      top: screen.availTop + Math.round((screen.availHeight - 500) / 2)
-    }, prefs => {
-      console.log(prefs);
-      chrome.windows.create({
-        url: 'data/join/index.html',
-        width: prefs.width,
-        height: prefs.height,
-        left: prefs.left,
-        top: prefs.top,
-        type: 'popup'
-      });
+    chrome.tabs.create({
+      url: 'https://webbrowsertools.com/audio-joiner/'
+    });
+  }
+  else if (info.menuItemId === 'mp3-converter') {
+    chrome.tabs.create({
+      url: 'https://webbrowsertools.com/convert-to-mp3/'
     });
   }
   else {
@@ -311,29 +349,42 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     open(request.url, native);
   }
   else if (request.cmd === 'combine') {
-    toM3U8(request.urls, resp => {
-      if (resp && resp.err) {
-        window.alert(resp.err);
-      }
-      else if (resp && resp.filename) {
-        open(resp.filename, new Native());
+    chrome.storage.local.get({
+      'm3u8': true
+    }, prefs => {
+      const native = new Native();
+      if (prefs.m3u8) {
+        toM3U8(request.urls, resp => {
+          if (resp && resp.err) {
+            window.alert(resp.err);
+          }
+          else if (resp && resp.filename) {
+            open(resp.filename, native);
+          }
+          else {
+            chrome.tabs.create({
+              url: '/data/helper/index.html'
+            });
+          }
+        });
       }
       else {
-        chrome.tabs.create({
-          url: '/data/helper/index.html'
-        });
+        for (const url of request.urls) {
+          open(url, native);
+        }
       }
     });
   }
 });
 
+// FAQs and Feedback
 {
   const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
   const {name, version} = getManifest();
   const page = getManifest().homepage_url;
   onInstalled.addListener(({reason, previousVersion}) => {
     chrome.storage.local.get({
-      'faqs': false,
+      'faqs': true,
       'last-update': 0
     }, prefs => {
       if (reason === 'install' || (prefs.faqs && reason === 'update')) {

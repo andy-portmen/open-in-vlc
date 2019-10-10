@@ -2,7 +2,7 @@
   "name": "Open in VLC™ media player",
   "description": "Adds a context menu to send audio and video streams directly to the well-known VLC™ media player",
   "author": "Andy Portmen",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "manifest_version": 2,
   "permissions": [
     "storage",
