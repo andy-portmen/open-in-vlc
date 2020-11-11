@@ -1,11 +1,9 @@
 'use strict';
 
-try {
-  window.iframe.remove();
-}
-catch (e) {}
+[...document.querySelectorAll('.open-in-vlc')].forEach(f => f.remove());
 
 window.iframe = document.createElement('iframe');
+window.iframe.classList.add('open-in-vlc');
 window.iframe.setAttribute('style', `
   border: none;
   position: fixed;

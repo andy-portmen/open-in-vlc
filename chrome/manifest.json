@@ -2,19 +2,18 @@
   "name": "Open in VLC™ media player",
   "description": "Adds a context menu to send audio and video streams directly to the well-known VLC™ media player",
   "author": "Andy Portmen",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
-    "tabs",
-    "downloads",
     "contextMenus",
     "nativeMessaging",
     "webRequest",
+    "notifications",
     "<all_urls>"
   ],
   "optional_permissions": [
-    "clipboardWrite"
+    "downloads"
   ],
   "background": {
     "scripts": [
@@ -40,11 +39,7 @@
   "page_action": {
     "default_icon": {
       "16": "data/icons/16.png",
-      "19": "data/icons/19.png",
-      "32": "data/icons/32.png",
-      "38": "data/icons/38.png",
-      "48": "data/icons/48.png",
-      "64": "data/icons/64.png"
+      "32": "data/icons/32.png"
     }
   },
   "web_accessible_resources": [

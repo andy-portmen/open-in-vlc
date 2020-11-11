@@ -7,13 +7,38 @@ chrome.runtime.sendMessage({
 }, response => {
   document.getElementById('number').textContent = response.length;
 
-  response.forEach((url, index) => {
+
+  let active = 0;
+  response = [response[0], ...response.slice(1).sort(([aURL, aO], [bURL, bO]) => {
+    if (bO && bO.type === 'm3u8') {
+      return 1;
+    }
+    if (aO && aO.type === 'm3u8') {
+      return -1;
+    }
+  })];
+
+  response.forEach(([url, o], index) => {
     const option = document.createElement('option');
-    option.value = url;
-    option.textContent = index ? (index + '. ' + url) : 'Page URL: ' + url;
+
+    let ext = o && o.type ? o.type : url.split(/[#?]/)[0].split('.').pop().trim();
+    if (ext.indexOf('/') !== -1) {
+      ext = '';
+    }
+    ext = ext.substr(0, 6);
+
+    // select media
+    if (active === 0) {
+      if (ext === 'm3u8' || (o && o.size && Number(o.size) > 1024)) {
+        active = index;
+      }
+    }
+
+    option.title = option.value = url;
+    option.textContent = index ? (('0' + index).substr(-2) + '. ' + (ext ? `[${ext}] ` : '') + url) : 'Page URL: ' + url;
     select.appendChild(option);
   });
-  select.value = response[0];
+  select.value = response[active][0];
 });
 window.addEventListener('load', () => window.setTimeout(() => {
   select.focus();
@@ -60,8 +85,15 @@ document.addEventListener('click', e => {
       }));
     }
     else {
-      window.alert('Please select a media link from the list');
+      alert('Please select a media link from the list');
     }
+  }
+  else if (cmd === 'copy') {
+    const urls = [...select.options].filter(e => e.selected).map(e => e.value);
+    chrome.runtime.sendMessage({
+      cmd: 'copy',
+      content: urls.join('\n')
+    });
   }
 });
 select.addEventListener('dblclick', e => {

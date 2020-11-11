@@ -1,6 +1,13 @@
 
 'use strict';
 
+const notify = e => chrome.notifications.create({
+  type: 'basic',
+  iconUrl: '/data/icons/48.png',
+  title: chrome.runtime.getManifest().name,
+  message: e.message || e
+});
+
 const Native = function() {
   this.callback = null;
   this.channel = chrome.runtime.connectNative('com.add0n.node');
@@ -19,7 +26,7 @@ const Native = function() {
       });
     }
     else if (res.code && (res.code !== 0 && (res.code !== 1 || res.stderr !== ''))) {
-      window.alert(`Something went wrong!
+      notify(`Something went wrong!
 
 -----
 Code: ${res.code}
@@ -145,13 +152,13 @@ chrome.contextMenus.create({
   id: 'player',
   title: 'Open in VLC',
   contexts: ['video', 'audio'],
-  documentUrlPatterns: ['*://*/*']
+  documentUrlPatterns: ['*://*/*', 'file://*/*']
 });
 chrome.contextMenus.create({
   id: 'link',
   title: 'Open in VLC',
   contexts: ['link'],
-  documentUrlPatterns: ['*://*/*'],
+  documentUrlPatterns: ['*://*/*', 'file://*/*'],
   targetUrlPatterns: [
     '*://www.youtube.com/watch?v=*',
     '*://www.youtube.com/embed/*',
@@ -215,9 +222,17 @@ chrome.tabs.onRemoved.addListener(tabId => delete tabs[tabId]);
 
 function update(tabId) {
   chrome.pageAction.show(tabId);
+  const length = Object.keys(tabs[tabId]).length;
   chrome.pageAction.setTitle({
     tabId,
-    title: Object.keys(tabs[tabId]).length + ' media link(s)'
+    title: length + ' media link(s)'
+  });
+  chrome.pageAction.setIcon({
+    tabId,
+    path: {
+      '16': 'data/icons/' + (length === 1 ? 'single' : 'multiple') + '/16.png',
+      '32': 'data/icons/' + (length === 1 ? 'single' : 'multiple') + '/32.png'
+    }
   });
 }
 
@@ -226,11 +241,18 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
     tabs[d.tabId] = {};
   }
 
-  const types = d.responseHeaders.filter(h => h.name === 'Content-Type' || h.name === 'content-type')
-    .map(h => h.value.split('/')[0]).filter(v => v === 'video' || v === 'audio');
-  if (types.length) {
+  let type = d.responseHeaders.filter(h => h.name === 'Content-Type' || h.name === 'content-type')
+    .filter(h => h.value.startsWith('video') || h.value.startsWith('audio'))
+    .map(h => h.value.split('/')[1].split(';')[0]).shift();
+  if (d.url.toLowerCase().indexOf('.m3u8') !== -1) {
+    type = 'm3u8';
+  }
+  if (type) {
     tabs[d.tabId] = tabs[d.tabId] || {};
-    tabs[d.tabId][d.url] = true;
+    tabs[d.tabId][d.url] = {
+      type,
+      size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
+    };
 
     update(d.tabId);
   }
@@ -248,33 +270,13 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
 });
 
 function copy(tabId, content) {
-  if (/Firefox/.test(navigator.userAgent)) {
-    chrome.permissions.request({
-      permissions: ['clipboardWrite']
-    }, granted => granted && chrome.tabs.executeScript(tabId, {
-      runAt: 'document_start',
-      code: `
-        document.oncopy = event => {
-          event.clipboardData.setData('text/plain', '${content}');
-          event.preventDefault();
-        };
-        window.focus();
-        document.execCommand('Copy', false, null);
-      `
-    }, () => {
-      if (chrome.runtime.lastError) {
-        window.alert(chrome.runtime.lastError.message);
-      }
-    }));
-  }
-  else {
-    document.oncopy = e => {
-      e.clipboardData.setData('text/plain', content);
-      e.preventDefault();
-      copy.urls = [];
-    };
-    document.execCommand('Copy', false, null);
-  }
+  document.oncopy = e => {
+    e.clipboardData.setData('text/plain', content);
+    e.preventDefault();
+    copy.urls = [];
+    notify('Copied to the clipboard');
+  };
+  document.execCommand('Copy', false, null);
 }
 
 // actions
@@ -285,7 +287,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       copy(tab.id, detected.join('\n'));
     }
     else {
-      window.alert('There is no media link for this page');
+      notify('There is no media link for this page');
     }
   }
   else if (info.menuItemId === 'page-link') {
@@ -330,7 +332,13 @@ chrome.pageAction.onClicked.addListener(tab => {
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
   if (request.cmd === 'get-links') {
-    response([sender.tab.url, ...Object.keys(tabs[sender.tab.id])]);
+    response([[sender.tab.url], ...Object.entries(tabs[sender.tab.id])]);
+  }
+  else if (request.cmd === 'copy') {
+    copy(sender.tab.id, request.content);
+  }
+  else if (request.cmd === 'notify') {
+    notify(request.message);
   }
   else if (request.cmd === 'close-me') {
     chrome.tabs.executeScript(sender.tab.id, {
@@ -356,7 +364,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
       if (prefs.m3u8) {
         toM3U8(request.urls, resp => {
           if (resp && resp.err) {
-            window.alert(resp.err);
+            notify(resp.err);
           }
           else if (resp && resp.filename) {
             open(resp.filename, native);
@@ -377,29 +385,29 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
 });
 
-// FAQs and Feedback
+/* FAQs & Feedback */
 {
-  const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
-  const {name, version} = getManifest();
-  const page = getManifest().homepage_url;
-  onInstalled.addListener(({reason, previousVersion}) => {
-    chrome.storage.local.get({
-      'faqs': true,
-      'last-update': 0
-    }, prefs => {
-      if (reason === 'install' || (prefs.faqs && reason === 'update')) {
-        const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
-        if (doUpdate && previousVersion !== version) {
-          chrome.tabs.create({
-            url: page + '?version=' + version +
-              (previousVersion ? '&p=' + previousVersion : '') +
-              '&type=' + reason,
-            active: reason === 'install'
-          });
-          chrome.storage.local.set({'last-update': Date.now()});
+  const {management, runtime: {onInstalled, setUninstallURL, getManifest}, storage, tabs} = chrome;
+  if (navigator.webdriver !== true) {
+    const page = getManifest().homepage_url;
+    const {name, version} = getManifest();
+    onInstalled.addListener(({reason, previousVersion}) => {
+      management.getSelf(({installType}) => installType === 'normal' && storage.local.get({
+        'faqs': true,
+        'last-update': 0
+      }, prefs => {
+        if (reason === 'install' || (prefs.faqs && reason === 'update')) {
+          const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
+          if (doUpdate && previousVersion !== version) {
+            tabs.create({
+              url: page + '?version=' + version + (previousVersion ? '&p=' + previousVersion : '') + '&type=' + reason,
+              active: reason === 'install'
+            });
+            storage.local.set({'last-update': Date.now()});
+          }
         }
-      }
+      }));
     });
-  });
-  setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
+    setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
+  }
 }
