@@ -4,20 +4,24 @@ const toast = document.getElementById('toast');
 
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
+    'blacklist': '',
     'path': '',
     'm3u8': true,
     'faqs': true
   }, prefs => {
+    document.getElementById('blacklist').value = prefs.blacklist;
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
     document.getElementById('faqs').checked = prefs.faqs;
   });
 });
 document.getElementById('save').addEventListener('click', () => {
+  const blacklist = document.getElementById('blacklist').value;
   const path = document.getElementById('path').value;
   const m3u8 = document.getElementById('m3u8').checked;
   const faqs = document.getElementById('faqs').checked;
   chrome.storage.local.set({
+    blacklist,
     path,
     m3u8
   }, () => {

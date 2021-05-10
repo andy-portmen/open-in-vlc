@@ -8,7 +8,7 @@ const notify = e => chrome.notifications.create({
   message: e.message || e
 });
 
-const Native = function() {
+const Native = function () {
   this.callback = null;
   this.channel = chrome.runtime.connectNative('com.add0n.node');
 
@@ -46,8 +46,8 @@ Error: ${res.stderr}`
     }
   });
 };
-Native.prototype.env = function(callback) {
-  this.callback = function(res) {
+Native.prototype.env = function (callback) {
+  this.callback = function (res) {
     callback(res);
   };
   this.channel.postMessage({
@@ -55,8 +55,8 @@ Native.prototype.env = function(callback) {
   });
 };
 
-Native.prototype.exec = function(command, args, callback = function() {}) {
-  this.callback = function(res) {
+Native.prototype.exec = function (command, args, callback = function () { }) {
+  this.callback = function (res) {
     callback(res);
   };
   this.channel.postMessage({
@@ -247,14 +247,32 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
   if (d.url.toLowerCase().indexOf('.m3u8') !== -1) {
     type = 'm3u8';
   }
+
   if (type) {
+    let blacklistArray = []
+
     tabs[d.tabId] = tabs[d.tabId] || {};
+
     tabs[d.tabId][d.url] = {
       type,
       size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
     };
 
-    update(d.tabId);
+    chrome.storage.local.get({
+      'blacklist': ''
+    }, prefs => {
+      if (prefs.blacklist) {
+        blacklistArray = prefs.blacklist.split(",")
+
+        Object.keys(tabs[d.tabId]).forEach(url => {
+          if (new RegExp(blacklistArray.join("|")).test(url)) {
+            // console.log("Match using '" + url + "'",);
+            delete tabs[d.tabId][url]
+          }
+        })
+      }
+      update(d.tabId);
+    })
   }
 }, {
   urls: ['*://*/*'],
@@ -387,12 +405,12 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
 
 /* FAQs & Feedback */
 {
-  const {management, runtime: {onInstalled, setUninstallURL, getManifest}, storage, tabs} = chrome;
+  const { management, runtime: { onInstalled, setUninstallURL, getManifest }, storage, tabs } = chrome;
   if (navigator.webdriver !== true) {
     const page = getManifest().homepage_url;
-    const {name, version} = getManifest();
-    onInstalled.addListener(({reason, previousVersion}) => {
-      management.getSelf(({installType}) => installType === 'normal' && storage.local.get({
+    const { name, version } = getManifest();
+    onInstalled.addListener(({ reason, previousVersion }) => {
+      management.getSelf(({ installType }) => installType === 'normal' && storage.local.get({
         'faqs': true,
         'last-update': 0
       }, prefs => {
@@ -403,7 +421,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
               url: page + '?version=' + version + (previousVersion ? '&p=' + previousVersion : '') + '&type=' + reason,
               active: reason === 'install'
             });
-            storage.local.set({'last-update': Date.now()});
+            storage.local.set({ 'last-update': Date.now() });
           }
         }
       }));
