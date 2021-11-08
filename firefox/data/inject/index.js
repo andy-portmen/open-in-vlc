@@ -66,6 +66,16 @@ document.addEventListener('click', e => {
       cmd: 'close-me'
     });
   }
+  else if (cmd === 'select-all') {
+    if (select.options.length > 1) {
+      for (const o of [...select.options].slice(1)) {
+        o.selected = true;
+      }
+    }
+    else if (select.options.length) {
+      select.option[0].selected = true;
+    }
+  }
   else if (cmd === 'open-in') {
     const urls = [...select.options].filter(e => e.selected).map(e => e.value);
     if (urls.length === 1) {

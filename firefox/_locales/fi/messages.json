@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Lähetä ääni- ja videovirrat suoraan tunnettuun VLC™-mediasoittimeen."
+  },
+  "page_action": {
+    "message": "[Valkoinen] Mediaa ei havaittu\n[Sininen] Useita mediavirtoja havaittu\n[Vihreä] Mediavirta on havaittu\n\nKäytä hiiren oikealla napsautuksella olevaa kontekstivalikkoa muita toimintoja varten tai muuntotyökalun suorittamiseksi."
+  }
+}

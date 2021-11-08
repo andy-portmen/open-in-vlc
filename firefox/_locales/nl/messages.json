@@ -1,0 +1,10 @@
+{
+  "description": {
+    "message": "Stuur audio- en videostreams rechtstreeks naar de bekende VLC™ mediaspeler"
+  },
+  "page_action": {
+    "message": "Wit] Er is geen media gedetecteerd\nBlauw] Meerdere mediastreams gedetecteerd\nGroen] Een mediastream is gedetecteerd\n\nGebruik het contextmenu met de rechtermuisknop voor andere acties of om een conversieprogramma uit te voeren"
+  }
+}
+
+

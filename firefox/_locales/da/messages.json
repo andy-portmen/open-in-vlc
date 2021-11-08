@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Audio- und Videostreams direkt an den bekannten VLC™ Media Player senden"
+  },
+  "page_action": {
+    "message": "Weiß] Es werden keine Medien erkannt\nBlau] Mehrere Medienstreams erkannt\nGrün] Ein Medienstrom wird erkannt\n\nVerwenden Sie das Kontextmenü mit der rechten Maustaste für andere Aktionen oder zum Ausführen eines Konvertierungstools"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Odesílání audio a video streamů přímo do známého multimediálního přehrávače VLC™"
+  },
+  "page_action": {
+    "message": "[Bílá] Nejsou detekována žádná média\n[Modrá] Zjištěno více mediálních proudů\nZelená] Je detekován mediální proud\n\nPro další akce nebo spuštění konverzního nástroje použijte kontextovou nabídku pravého tlačítka myši"
+  }
+}

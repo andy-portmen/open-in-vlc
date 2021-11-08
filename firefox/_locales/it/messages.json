@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Invia flussi audio e video direttamente al noto lettore multimediale VLC"
+  },
+  "page_action": {
+    "message": "Bianco] Nessun media rilevato\nBlu] Rilevati più flussi multimediali\nVerde] Rilevato un flusso multimedial\n\n\nUsa il menu contestuale del tasto destro del mouse per altre azioni o per eseguire uno strumento di conversione"
+  }
+}

@@ -2,36 +2,32 @@
 <html>
 <head>
   <title>Open In VLC media player :: Options</title>
-  <style>
-    input[type="path"] {
-      width: 100%;
-      padding: 5px;
-      box-sizing: border-box;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
 <body>
-  <p>
+  <div class="one">
     <label for="path">Path to VLC executable:</label>
-    <br>
     <input type="path" id="path" placeholder="example: C:\VLC\vlc.exe">
-  </p>
-  <p>
-    On Windows, if path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. On Linux, if the path is not set, it is assumed that the "vlc" binary can be found in the PATH environment variables. On Mac, this option is ignored since <code>open -a VLC</code> command is used.
-  </p>
-  <p>
-    <label><input type="checkbox" id="m3u8"> When there are more than one media links, send them all in an M3U8 container at once.</label>
-  </p>
-  <p>
-    <label><input type="checkbox" id="faqs"> Open FAQs page on updates to notify about the recent changes.</label>
-  </p>
+      <p class="note">
+        On Windows, if the path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. On Linux, if the path is not set, it is assumed that the "vlc" binary can be found in the PATH environment variables. On Mac, this option is ignored since <code>open -a VLC</code> command is used.
+      </p>
+  </div>
+
+  <div class="two">
+    <input type="checkbox" id="m3u8">
+    <label for="m3u8">M3U8 Container</label>
+    <div class="note pack">When there are more than one media links, send them all in an M3U8 container at once.</div>
+    <input type="checkbox" id="faqs">
+    <label for="faqs">FAQs Page</label>
+    <div class="note pack">Open FAQs page on updates to notify about the recent changes.</div>
+  </div>
 
   <div data-cols="4" id="explore"></div>
 
   <p>
     <button id="reset">Reset</button>
-    <button id="support">Support Development</button> - <button id="save">Save</button> <span id="toast"></span>
+    <button id="support">Support Development</button> - <button id="save">Save Options</button> <span id="toast"></span>
   </p>
 
   <script src="index.js"></script>

@@ -21,9 +21,14 @@
         outline: none;
         border: solid 1px #f7ba79;
       }
+      option {
+        padding: 3px 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       #toolbar {
         display: grid;
-        grid-template-columns: 1fr min-content min-content;
+        grid-template-columns: 1fr min-content min-content min-content;
         grid-gap: 2px;
         margin-top: 2px;
       }
@@ -40,10 +45,12 @@
     </style>
   </head>
   <body>
-    <span style="margin-bottom: 5px;">Please select media links among <span id="number">...</span> detected links:</span>
+    <div style="margin-bottom: 5px;">Select media links among <span id="number">...</span> detected links:</div>
     <select size=8 multiple></select>
+    <div style="margin: 5px 0;">Use Ctrl key on Windows or Command key on Mac to select multiple items.</div>
     <div id="toolbar">
       <input type="button" value="Close" data-cmd="close-me">
+      <input type="button" value="Select All" data-cmd="select-all">
       <input type="button" value="Copy to Clipboard" data-cmd="copy">
       <input type="button" value="Open in VLC" data-cmd="open-in">
     </div>

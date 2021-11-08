@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Send audio and video streams directly to the well-known VLC™ media player"
+  },
+  "page_action": {
+    "message": "[White] No media is detected\n[Blue] Multiple media streams detected\n[Green] A media stream is detected\n\nUse right-click context menu for other actions or to run a conversion tool"
+  }
+}

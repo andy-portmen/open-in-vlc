@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Envoyez des flux audio et vidéo directement sur le célèbre lecteur multimédia VLC™."
+  },
+  "page_action": {
+    "message": "[Blanc] Aucun média n'est détecté\n[Bleu] Plusieurs flux média détectés\nVert] Un flux multimédia est détecté\n\nUtiliser le menu contextuel du clic droit pour d'autres actions ou pour exécuter un outil de conversion."
+  }
+}

@@ -10,7 +10,7 @@ window.iframe.setAttribute('style', `
   top: 0;
   left: 0;
   right: 0;
-  width: 450px;
+  width: 500px;
   height: 200px;
   max-width: 80%;
   margin-left: auto;
