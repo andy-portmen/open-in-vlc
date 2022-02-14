@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Saate heli- ja videovooge otse tuntud VLC™ meediapleierisse"
+  },
+  "page_action": {
+    "message": "[Valge] Meediat ei ole tuvastatud\n[Sinine] Avastatud mitu meediavoogu\n[Roheline] Meediavoog on tuvastatud\n\nKasutage parema hiireklõpsu kontekstmenüüd muude toimingute tegemiseks või teisendustööriista käivitamiseks"
+  }
+}

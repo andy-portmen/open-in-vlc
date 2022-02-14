@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Open in VLC™ media player",
+  "description": "__MSG_description__",
+  "default_locale": "en",
+  "version": "0.3.0",
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "nativeMessaging",
+    "webRequest",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "optional_permissions": [
+    "downloads"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "homepage_url": "https://add0n.com/open-in-vlc.html",
+  "icons": {
+    "16": "data/icons/16.png",
+    "32": "data/icons/32.png",
+    "48": "data/icons/48.png",
+    "64": "data/icons/64.png",
+    "128": "data/icons/128.png",
+    "256": "data/icons/256.png",
+    "512": "data/icons/512.png"
+  },
+  "options_ui": {
+    "page": "data/options/index.html"
+  },
+  "action": {
+    "default_title": "__MSG_page_action__"
+  },
+  "web_accessible_resources": [{
+    "resources": ["/data/inject/*"],
+    "matches": ["*://*/*"]
+  }],
+  "commands": {
+    "_execute_action": {
+      "description": "Press the action button"
+    }
+  }
+}

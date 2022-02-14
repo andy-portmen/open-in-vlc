@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
+        padding: 10px;
+        box-sizing: border-box;
+        background-color: #ffecd8;
+      }
+      select {
+        width: 100%;
+        flex:  1;
+        outline: none;
+        border: solid 1px #f7ba79;
+      }
+      option {
+        padding: 3px 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #toolbar {
+        display: grid;
+        grid-template-columns: 1fr min-content min-content min-content;
+        grid-gap: 2px;
+        margin-top: 2px;
+      }
+      input {
+        border: solid 1px #f7ba79;
+        background-color: #fff;
+        padding: 5px 10px;
+        cursor: pointer;
+        outline: none;
+      }
+      [data-cmd=close-me] {
+        justify-self: start;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="margin-bottom: 5px;">Select media links among <span id="number">...</span> detected links:</div>
+    <select size=8 multiple></select>
+    <div style="margin: 5px 0;">Use Ctrl key on Windows or Command key on Mac to select multiple items.</div>
+    <div id="toolbar">
+      <input type="button" value="Close" data-cmd="close-me">
+      <input type="button" value="Select All" data-cmd="select-all">
+      <input type="button" value="Copy to Clipboard" data-cmd="copy">
+      <input type="button" value="Open in VLC" data-cmd="open-in">
+    </div>
+    <script src="index.js"></script>
+  </body>
+</html>

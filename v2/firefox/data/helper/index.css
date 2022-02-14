@@ -1,0 +1,118 @@
+:root {
+  --clc: #4d5156;
+  --bg-pink: #ffeee2;
+}
+
+body {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.3em;
+  background-color: #fff;
+  color: var(--clc);
+  margin: 0;
+}
+h1 {
+  color: var(--clc);
+  background-color: var(--bg-pink);
+  padding: 20px 10px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: normal;
+}
+p {
+  padding: 10px;
+  margin: 0 0 10px 0;
+}
+input {
+  padding: 20px;
+  color: var(--clc);
+  background-color: var(--bg-pink);
+  border: none;
+  font-size: 120%;
+  outline: none;
+  cursor: pointer;
+}
+input:active {
+  opacity: 0.5;
+}
+.note {
+  color: var(--clc);
+  background-color: var(--bg-pink);
+  font-size: 90%;
+}
+.flex {
+  display: flex;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+}
+body[data-os=windows] .linux {
+  display: none;
+}
+body[data-os=linux] .windows {
+  display: none;
+}
+body[data-step="1"] .step1 {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+a,
+a:visited {
+  color: #06c;
+  text-decoration: none;
+}
+li {
+  padding: 3px 0;
+}
+.guide {
+  padding-left: 10px;
+}
+.guide ul {
+  margin: 5px;
+}
+#notify {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+}
+#notify > div {
+  display: flex;
+  align-items: center;
+  padding: 10px 10px 10px 40px;
+  border: solid 1px #ccc;
+  background-position: left 10px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  margin: 5px 0;
+}
+#notify > div[data-type=success] {
+  background-image: url('imgs/success.svg');
+  background-color: #abf8b6;
+  color: #006f00;
+  border-color: #30d053;
+}
+#notify > div[data-type=error] {
+  background-image: url('imgs/error.svg');
+  background-color: #ff787d;
+  color: #fff;
+  border-color: #ff3857;
+}
+#notify > div[data-type=info] {
+  background-image: url('imgs/info.svg');
+  background-color: #ffea9f;
+  color: #744b00;
+  border-color: #ffcd17;
+}
+
+body[data-installed=true] #steps > li {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+body[data-installed=true] #alternative {
+  font-weight: bold;
+  color: red;
+}
+body[data-installed=true] .canhide {
+  opacity: 0.5;
+}

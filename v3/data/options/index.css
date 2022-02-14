@@ -51,7 +51,7 @@ input[type="path"] {
   box-sizing: border-box;
 }
 code {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.1);
   padding: 2px;
 }
 .one {

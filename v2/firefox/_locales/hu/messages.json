@@ -1,0 +1,8 @@
+{
+  "description": {
+    "message": "Hang- és videófolyamokat küldhet közvetlenül a jól ismert VLC™ médialejátszóba."
+  },
+  "page_action": {
+    "message": "[Fehér] Nincs média észlelve\n[Kék] Több médiafolyam észlelése\n[Zöld] Médiafolyam észlelésre ke\nült\n\nHasználja a jobb egérgombbal történő kontextuális menüt egyéb műveletekhez vagy egy konverziós eszköz futtatásához."
+  }
+}
