@@ -1,7 +1,7 @@
 /* global Native */
 
-self.importScripts('native.js');
-self.importScripts('context.js');
+// self.importScripts('native.js');
+// self.importScripts('context.js');
 
 const notify = (e, tabId) => {
   chrome.action.setTitle({
@@ -20,7 +20,7 @@ const notify = (e, tabId) => {
 
 // handle multiple links
 const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
-  'use-page-title': false
+  'use-page-title': true
 }, prefs => chrome.runtime.sendNativeMessage('com.add0n.node', {
   permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
   args: [`#EXTM3U
@@ -149,6 +149,7 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
   if (d.url.toLowerCase().indexOf('.m3u8') !== -1) {
     type = 'm3u8';
   }
+
   if (type) {
     chrome.storage.session.get({
       [d.tabId]: {}

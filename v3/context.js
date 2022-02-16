@@ -51,32 +51,32 @@ const context = () => {
   chrome.contextMenus.create({
     id: 'copy-links',
     title: 'Copy Media Links to the Clipboard',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
   chrome.contextMenus.create({
     id: 'page-link',
     title: 'Send Page Link to VLC',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
   chrome.contextMenus.create({
     id: 'separator',
     type: 'separator',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
   chrome.contextMenus.create({
     id: 'download-hls',
     title: 'Download Live Streams',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
   chrome.contextMenus.create({
     id: 'audio-joiner',
     title: 'Join Audio Files',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
   chrome.contextMenus.create({
     id: 'mp3-converter',
     title: 'Convert to MP3',
-    contexts: ['action']
+    contexts: ['action', 'browser_action']
   });
 };
 chrome.runtime.onStartup.addListener(context);

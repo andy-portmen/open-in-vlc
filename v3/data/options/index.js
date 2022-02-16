@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
     'path': '',
     'm3u8': true,
-    'use-page-title': false,
+    'use-page-title': true,
     'faqs': true
   }, prefs => {
     document.getElementById('path').value = prefs.path;
