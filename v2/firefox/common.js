@@ -248,13 +248,28 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
     type = 'm3u8';
   }
   if (type) {
+    let blacklistArray = []
     tabs[d.tabId] = tabs[d.tabId] || {};
     tabs[d.tabId][d.url] = {
       type,
       size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
     };
 
-    update(d.tabId);
+    chrome.storage.local.get({
+      'blacklist': ''
+    }, prefs => {
+      if (prefs.blacklist) {
+        blacklistArray = prefs.blacklist.split(",")
+
+        Object.keys(tabs[d.tabId]).forEach(url => {
+          if (new RegExp(blacklistArray.join("|")).test(url)) {
+            // console.log("Match using '" + url + "'",);
+            delete tabs[d.tabId][url]
+          }
+        })
+      }
+      update(d.tabId);
+    })
   }
 }, {
   urls: ['*://*/*'],
