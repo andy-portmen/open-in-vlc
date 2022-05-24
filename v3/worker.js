@@ -151,6 +151,7 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
   }
 
   if (type) {
+    let blacklistArray = []
     chrome.storage.session.get({
       [d.tabId]: {}
     }, prefs => {
@@ -158,6 +159,14 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
         type,
         size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
       };
+      if (prefs.blacklist.length > 0) {
+        blacklistArray = prefs.blacklist.split(",")
+        Object.keys(tabs[d.tabId]).forEach(url => {
+          if (new RegExp(blacklistArray.join("|")).test(url)) {
+            delete tabs[d.tabId][url]
+          }
+        })
+      }
       chrome.storage.session.set(prefs, () => update(d.tabId));
     });
   }

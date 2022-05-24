@@ -7,12 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     'path': '',
     'm3u8': true,
     'use-page-title': true,
-    'faqs': true
+    'faqs': true,
+    'blacklist': ''
   }, prefs => {
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
     document.getElementById('use-page-title').checked = prefs['use-page-title'];
     document.getElementById('faqs').checked = prefs.faqs;
+    document.getElementById('blacklist').value = prefs.blacklist;
   });
 });
 document.getElementById('save').addEventListener('click', () => {
@@ -20,7 +22,8 @@ document.getElementById('save').addEventListener('click', () => {
     'path': document.getElementById('path').value,
     'm3u8': document.getElementById('m3u8').checked,
     'faqs': document.getElementById('faqs').checked,
-    'use-page-title': document.getElementById('use-page-title').checked
+    'use-page-title': document.getElementById('use-page-title').checked,
+    'blacklist': document.getElementById('blacklist').value
   }, () => {
     toast.textContent = 'Options saved.';
     setTimeout(() => toast.textContent = '', 750);

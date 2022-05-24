@@ -6,20 +6,24 @@ document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
     'path': '',
     'm3u8': true,
-    'faqs': true
+    'faqs': true,
+    'blacklist': ''
   }, prefs => {
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
     document.getElementById('faqs').checked = prefs.faqs;
+    document.getElementById('blacklist').value = prefs.blacklist;
   });
 });
 document.getElementById('save').addEventListener('click', () => {
   const path = document.getElementById('path').value;
   const m3u8 = document.getElementById('m3u8').checked;
   const faqs = document.getElementById('faqs').checked;
+  const blacklist = document.getElementById('blacklist').value;
   chrome.storage.local.set({
     path,
-    m3u8
+    m3u8,
+    blacklist
   }, () => {
     toast.textContent = 'Options saved.';
     setTimeout(() => toast.textContent = '', 750);
