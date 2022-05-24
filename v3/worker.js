@@ -151,24 +151,21 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
   }
 
   if (type) {
-    let blacklistArray = []
-    chrome.storage.session.get({
+    chrome.storage.local.get({
+      blacklist: []
+    }, ps => chrome.storage.session.get({
       [d.tabId]: {}
     }, prefs => {
+      if (ps.blacklist.length && new RegExp(ps.blacklist.join('|')).test(d.url)) {
+        return;
+      }
+
       prefs[d.tabId][d.url] = {
         type,
         size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
       };
-      if (prefs.blacklist.length > 0) {
-        blacklistArray = prefs.blacklist.split(",")
-        Object.keys(tabs[d.tabId]).forEach(url => {
-          if (new RegExp(blacklistArray.join("|")).test(url)) {
-            delete tabs[d.tabId][url]
-          }
-        })
-      }
       chrome.storage.session.set(prefs, () => update(d.tabId));
-    });
+    }));
   }
 }, {
   urls: ['*://*/*'],
