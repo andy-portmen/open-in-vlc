@@ -1,7 +1,7 @@
 /* global Native */
 
-// self.importScripts('native.js');
-// self.importScripts('context.js');
+self.importScripts('native.js');
+self.importScripts('context.js');
 
 const notify = (e, tabId) => {
   chrome.action.setTitle({
@@ -16,6 +16,13 @@ const notify = (e, tabId) => {
     tabId,
     text: 'E'
   });
+  chrome.scripting.executeScript({
+    target: {
+      tabId
+    },
+    func: msg => alert(msg),
+    args: [e.message || e]
+  }).catch(() => {});
 };
 
 // handle multiple links

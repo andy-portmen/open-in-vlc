@@ -43,6 +43,7 @@ input[type=number]:focus {
 a,
 a:visited {
   color: #07c;
+  text-decoration: none;
 }
 
 input[type="path"] {
@@ -57,6 +58,7 @@ code {
 .one {
   display: grid;
   grid-gap: 5px;
+  margin-bottom: 20px;
 }
 .two {
   display: grid;

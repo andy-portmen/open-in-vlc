@@ -9,7 +9,7 @@ chrome.runtime.sendMessage({
 
 
   let active = 0;
-  response = [response[0], ...response.slice(1).sort(([aURL, aO], [bURL, bO]) => {
+  response = [response[0], ...response.slice(1).sort(([, aO], [, bO]) => {
     if (bO && bO.type === 'm3u8') {
       return 1;
     }
@@ -64,7 +64,7 @@ document.addEventListener('click', e => {
   if (cmd === 'close-me') {
     chrome.runtime.sendMessage({
       cmd: 'close-me'
-    });
+    }, () => chrome.runtime.lastError);
   }
   else if (cmd === 'select-all') {
     if (select.options.length > 1) {
@@ -82,17 +82,23 @@ document.addEventListener('click', e => {
       chrome.runtime.sendMessage({
         cmd: 'open-in',
         url: urls[0]
-      }, () => chrome.runtime.sendMessage({
-        cmd: 'close-me'
-      }));
+      }, () => {
+        chrome.runtime.lastError;
+        chrome.runtime.sendMessage({
+          cmd: 'close-me'
+        });
+      });
     }
     else if (urls.length > 1) {
       chrome.runtime.sendMessage({
         cmd: 'combine',
         urls
-      }, () => chrome.runtime.sendMessage({
-        cmd: 'close-me'
-      }));
+      }, () => {
+        chrome.runtime.lastError;
+        chrome.runtime.sendMessage({
+          cmd: 'close-me'
+        });
+      });
     }
     else {
       alert('Please select a media link from the list');
@@ -103,7 +109,7 @@ document.addEventListener('click', e => {
     chrome.runtime.sendMessage({
       cmd: 'copy',
       content: urls.join('\n')
-    });
+    }, () => chrome.runtime.lastError);
   }
 });
 select.addEventListener('dblclick', e => {

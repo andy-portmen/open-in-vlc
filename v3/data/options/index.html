@@ -1,45 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Open In VLC media player :: Options</title>
+  <title>Options Page :: Open In VLC media player</title>
   <link rel="stylesheet" type="text/css" href="index.css">
   <meta charset="utf-8">
 </head>
 
 <body>
   <div class="one">
-    <label for="path">Path to VLC executable:</label>
-    <input type="path" id="path" placeholder="example: C:\VLC\vlc.exe">
-      <p class="note">
-        On Windows, if the path is not provided (is empty) <code>%ProgramFiles%\VideoLAN\VLC\vlc.exe</code> directory is used. On Linux, if the path is not set, it is assumed that the "vlc" binary can be found in the PATH environment variables. On Mac, this option is ignored since <code>open -a VLC</code> command is used.
-      </p>
+    <label for="path">Path to the VLC <a target="_blank" data-href="faq13">executable</a>:</label>
+    <input type="text" id="path" placeholder="example: C:\VLC\vlc.exe">
   </div>
 
   <div class="one">
-    <label for="blacklist">Filter URLs or Media Types (seperated by comma)</label>
+    <label for="blacklist"><a data-href="faq12" target="_blank">Filter URLs or Media Types</a> (separated by comma)</label>
     <input type="text" id="blacklist" placeholder="example: youtube, w3schools.com, mp4, avi">
-    <p class="note">
-      This option is used to filter out URLs or Media Types from the list of URLs or Media Types to be opened in VLC.
-      Removes all URLs or Media Types that match the provided filter.
-    </p>
   </div>
 
   <div class="two">
     <input type="checkbox" id="m3u8">
-    <label for="m3u8">M3U8 Container</label>
+    <label for="m3u8"><a target="_blank" data-href="faq11">M3U8</a> Container</label>
     <input type="checkbox" id="use-page-title">
-    <label for="use-page-title">Use Page Title for M3U8 Tracks</label>
-    <div class="note pack">When there are more than one media links, send them all in an M3U8 container at once.</div>
+    <label for="use-page-title">Use <a data-href="faq14" target="_blank">Page Title</a> for M3U8 Tracks</label>
     <input type="checkbox" id="faqs">
-    <label for="faqs">FAQs Page</label>
-    <div class="note pack">Open FAQs page on updates to notify about the recent changes.</div>
+    <label for="faqs">Open FAQs Page on Updates</label>
   </div>
 
   <div data-cols="3" id="explore"></div>
 
   <p>
-    <button id="reset">Reset</button>
-    <button id="support">Support Development</button> - <button id="save">Save Options</button> <span id="toast"></span>
+    <button id="usage">Usage Instruction</button>
+    <button id="support">Support Development</button>
+  </p>
+  <p>
+    <button id="reset">Factory Reset</button>
+    <button id="save"><b>Save Options</b></button> <span id="toast"></span>
   </p>
 
   <script src="matched.js"></script>

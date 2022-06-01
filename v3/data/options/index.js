@@ -50,3 +50,13 @@ document.getElementById('reset').addEventListener('click', e => {
 document.getElementById('support').addEventListener('click', () => chrome.tabs.create({
   url: chrome.runtime.getManifest().homepage_url + '?rd=donate'
 }));
+// links
+for (const a of [...document.querySelectorAll('[data-href]')]) {
+  if (a.hasAttribute('href') === false) {
+    a.href = chrome.runtime.getManifest().homepage_url + '#' + a.dataset.href;
+  }
+}
+// usage
+document.getElementById('usage').addEventListener('click', () => chrome.tabs.create({
+  url: 'https://www.youtube.com/watch?v=PtBh9JzeueE'
+}));
