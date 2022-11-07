@@ -3,8 +3,6 @@
 const args = new URLSearchParams(location.search);
 const id = args.get('id') || 'com.add0n.node';
 
-document.title = 'One Extra Step :: ' + chrome.runtime.getManifest().name;
-
 let os = 'windows';
 if (navigator.userAgent.indexOf('Mac') !== -1) {
   os = 'mac';
@@ -15,41 +13,17 @@ else if (navigator.userAgent.indexOf('Linux') !== -1) {
 document.body.dataset.os = (os === 'mac' || os === 'linux') ? 'linux' : 'windows';
 
 if (['Lin', 'Win', 'Mac'].indexOf(navigator.platform.substr(0, 3)) === -1) {
-  window.alert('Sorry! The "native client" only supports the following operating systems at the moment:\n\nWindows, Mac, and Linux');
+  window.alert(`Sorry! The "native client" only supports the following operating systems at the moment:
+
+Windows, Mac, and Linux`);
 }
 
-const notify = (() => {
-  const parent = document.getElementById('notify');
-  const elems = [];
-  return {
-    show: function(type, msg, delay) {
-      const elem = document.createElement('div');
-      elem.textContent = msg;
-      elem.dataset.type = type;
-      parent.appendChild(elem);
-      window.setTimeout(() => {
-        try {
-          parent.removeChild(elem);
-        }
-        catch (e) {}
-      }, delay || 3000);
-      elems.push(elem);
-    },
-    destroy: function() {
-      elems.forEach(elem => {
-        try {
-          parent.removeChild(elem);
-        }
-        catch (e) {}
-      });
-    }
-  };
-})();
+const toast = document.getElementById('toast');
 
 document.addEventListener('click', ({target}) => {
   if (target.dataset.cmd === 'download') {
     const next = () => {
-      notify.show('info', 'Looking for the latest version of the native-client', 60000);
+      toast.notify('Looking for the latest version of the native-client', 'info', 60000);
       const req = new window.XMLHttpRequest();
       req.open('GET', 'https://api.github.com/repos/andy-portmen/native-client/releases/latest');
       req.responseType = 'json';
@@ -58,15 +32,15 @@ document.addEventListener('click', ({target}) => {
           filename: os + '.zip',
           url: req.response.assets.filter(a => a.name === os + '.zip')[0].browser_download_url
         }, () => {
-          notify.show('success', 'Download is started. Extract and install when it is done');
+          toast.notify('Download is started. Extract and install when it is done', 'success');
           window.setTimeout(() => {
-            notify.destroy();
+            toast.clean();
             document.body.dataset.step = 1;
           }, 3000);
         });
       };
       req.onerror = () => {
-        notify('error', 'Something went wrong! Please download the package manually');
+        toast.notify('Something went wrong! Please download the package manually', 'error');
         window.setTimeout(() => {
           window.open('https://github.com/andy-portmen/native-client/releases');
         }, 5000);
@@ -84,7 +58,7 @@ document.addEventListener('click', ({target}) => {
           next();
         }
         else {
-          notify.show('error', 'Cannot initiate file downloading. Please download the file manually', 60000);
+          toast.notify('error', 'Cannot initiate file downloading. Please download the file manually', 60000);
         }
       });
     }
@@ -94,10 +68,10 @@ document.addEventListener('click', ({target}) => {
       cmd: 'version'
     }, response => {
       if (response) {
-        notify.show('success', 'Native client version is ' + response.version);
+        toast.notify('Native client version is ' + response.version, 'success');
       }
       else {
-        notify.show('error', 'Cannot find the native client. Follow the 3 steps to install the native client');
+        toast.notify('Cannot find the native client. Follow the 3 steps to install the native client', 'error');
       }
     });
   }

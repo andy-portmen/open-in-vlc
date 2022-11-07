@@ -1,5 +1,13 @@
 /* global Native */
 
+const TYPES = [
+  // video
+  'avi', 'mid', 'webm', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'ogg', 'mp4', 'm4p',
+  'm4v', 'avi', 'wmv', 'mov', 'flv', 'ogv', '3gp', '3g2',
+  // audio
+  'aac', 'mp3', 'oga', 'opus', 'wav', 'weba', 'flac', 'pcm', 'm4a', 'aifc', 'aiff'
+];
+
 self.importScripts('native.js');
 self.importScripts('context.js');
 
@@ -133,8 +141,8 @@ function update(tabId) {
     chrome.action.setIcon({
       tabId,
       path: {
-        '16': 'data/icons/' + (length === 1 ? 'single' : 'multiple') + '/16.png',
-        '32': 'data/icons/' + (length === 1 ? 'single' : 'multiple') + '/32.png'
+        '16': '/data/icons/' + (length === 1 ? 'single' : 'multiple') + '/16.png',
+        '32': '/data/icons/' + (length === 1 ? 'single' : 'multiple') + '/32.png'
       }
     });
   });
@@ -153,8 +161,14 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
   let type = d.responseHeaders.filter(h => h.name === 'Content-Type' || h.name === 'content-type')
     .filter(h => h.value.startsWith('video') || h.value.startsWith('audio'))
     .map(h => h.value.split('/')[1].split(';')[0]).shift();
-  if (d.url.toLowerCase().indexOf('.m3u8') !== -1) {
+  const href = d.url.toLowerCase();
+  // forced stream detection
+  if (href.includes('.m3u8')) {
     type = 'm3u8';
+  }
+  // types from UTL
+  if (!type) {
+    type = TYPES.find(s => href.includes('.' + s));
   }
 
   if (type) {
@@ -188,22 +202,27 @@ chrome.tabs.onUpdated.addListener((id, info, tab) => {
 });
 
 const copy = async (tabId, content) => {
-  const win = await chrome.windows.getCurrent();
-  chrome.storage.local.get({
-    width: 400,
-    height: 300,
-    left: win.left + Math.round((win.width - 400) / 2),
-    top: win.top + Math.round((win.height - 300) / 2)
-  }, prefs => {
-    chrome.windows.create({
-      url: '/data/copy/index.html?content=' + encodeURIComponent(content),
-      width: prefs.width,
-      height: prefs.height,
-      left: prefs.left,
-      top: prefs.top,
-      type: 'popup'
+  try {
+    await navigator.clipboard.writeText(content);
+  }
+  catch (e) {
+    const win = await chrome.windows.getCurrent();
+    chrome.storage.local.get({
+      width: 400,
+      height: 300,
+      left: win.left + Math.round((win.width - 400) / 2),
+      top: win.top + Math.round((win.height - 300) / 2)
+    }, prefs => {
+      chrome.windows.create({
+        url: '/data/copy/index.html?content=' + encodeURIComponent(content),
+        width: prefs.width,
+        height: prefs.height,
+        left: prefs.left,
+        top: prefs.top,
+        type: 'popup'
+      });
     });
-  });
+  }
 };
 
 // actions
@@ -215,13 +234,19 @@ chrome.action.onClicked.addListener(tab => {
   else {
     chrome.storage.session.get({
       [tab.id]: {}
-    }, prefs => {
+    }, async prefs => {
       const links = Object.keys(prefs[tab.id]);
       if (links.length === 1) {
         const native = new Native(tab.id);
         open(links[0], native);
       }
       else if (links.length > 1) {
+        await chrome.scripting.insertCSS({
+          target: {
+            tabId: tab.id
+          },
+          files: ['/data/inject/inject.css']
+        });
         chrome.scripting.executeScript({
           target: {
             tabId: tab.id
@@ -257,11 +282,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
         tabId: sender.tab.id
       },
       func: () => {
-        try {
-          window.iframe.remove();
-          window.iframe = '';
-        }
-        catch (e) {}
+        [...document.querySelectorAll('.open-in-vlc')].forEach(f => f.remove());
       }
     });
   }

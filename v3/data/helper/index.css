@@ -10,6 +10,8 @@ body {
   background-color: #fff;
   color: var(--clc);
   margin: 0;
+  width: min(70rem, 100vw);
+  margin-inline: auto;
 }
 h1 {
   color: var(--clc);
@@ -69,40 +71,6 @@ li {
 }
 .guide ul {
   margin: 5px;
-}
-#notify {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 300px;
-}
-#notify > div {
-  display: flex;
-  align-items: center;
-  padding: 10px 10px 10px 40px;
-  border: solid 1px #ccc;
-  background-position: left 10px center;
-  background-repeat: no-repeat;
-  background-size: 20px;
-  margin: 5px 0;
-}
-#notify > div[data-type=success] {
-  background-image: url('imgs/success.svg');
-  background-color: #abf8b6;
-  color: #006f00;
-  border-color: #30d053;
-}
-#notify > div[data-type=error] {
-  background-image: url('imgs/error.svg');
-  background-color: #ff787d;
-  color: #fff;
-  border-color: #ff3857;
-}
-#notify > div[data-type=info] {
-  background-image: url('imgs/info.svg');
-  background-color: #ffea9f;
-  color: #744b00;
-  border-color: #ffcd17;
 }
 
 body[data-installed=true] #steps > li {

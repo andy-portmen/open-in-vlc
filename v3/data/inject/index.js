@@ -109,7 +109,12 @@ document.addEventListener('click', e => {
     chrome.runtime.sendMessage({
       cmd: 'copy',
       content: urls.join('\n')
-    }, () => chrome.runtime.lastError);
+    }, () => {
+      chrome.runtime.lastError;
+      e.target.value = 'Copied';
+
+      setTimeout(() => e.target.value = 'Copy to Clipboard', 1000);
+    });
   }
 });
 select.addEventListener('dblclick', e => {

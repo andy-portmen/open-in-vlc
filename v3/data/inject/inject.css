@@ -1,0 +1,15 @@
+dialog.open-in-vlc {
+  padding: 0;
+  background-color: #ffecd8;
+  border: solid 2px #f7ba79;
+  margin-top: -2px;
+}
+dialog.open-in-vlc::backdrop {
+  background: rgba(60, 60, 60, 0.4);
+}
+dialog.open-in-vlc iframe {
+  color-scheme: none;
+  border: none;
+  height: 300px;
+  width: min(500px, 100vw - 2rem);
+}
