@@ -10,12 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     'use-page-title': true,
     'faqs': true,
     'blacklist': [],
-    'media-types': TYPES
+    'media-types': TYPES,
+    'max-number-of-items': 200
   }, prefs => {
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
     document.getElementById('use-page-title').checked = prefs['use-page-title'];
     document.getElementById('faqs').checked = prefs.faqs;
+    document.getElementById('max-number-of-items').value = prefs['max-number-of-items'];
     document.getElementById('blacklist').value = prefs.blacklist.join(', ');
     document.getElementById('media-types').value = prefs['media-types'].join(', ');
   });
@@ -31,7 +33,8 @@ document.getElementById('save').addEventListener('click', () => {
     }),
     'media-types': document.getElementById('media-types').value.split(/\s*,\s*/).filter((s, i, l) => {
       return s && l.indexOf(s) === i;
-    })
+    }),
+    'max-number-of-items': Math.max(5, document.getElementById('max-number-of-items').valueAsNumber) || 200
   }, () => {
     toast.textContent = 'Options saved.';
     setTimeout(() => toast.textContent = '', 750);

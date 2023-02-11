@@ -80,17 +80,31 @@ chrome.storage.onChanged.addListener(ps => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'copy-links') {
-    chrome.storage.session.get({
-      [tab.id]: {}
-    }, prefs => {
-      const detected = Object.keys(prefs[tab.id]);
-      if (detected.length) {
-        copy(tab.id, detected.join('\n'));
+    chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id
+      },
+      func: () => {
+        // sorting
+        return Object.entries(self.links || {}).sort(([, aO], [, bO]) => {
+          if (bO && bO.type === 'm3u8') {
+            return 1;
+          }
+          if (aO && aO.type === 'm3u8') {
+            return -1;
+          }
+          return aO.date - bO.date;
+        }).map(a => a[0]);
+      }
+    }).then(r => {
+      const links = r[0]?.result || [];
+      if (links.length) {
+        copy(tab.id, links.join('\n'));
       }
       else {
         notify('There is no media link for this page', tab.id);
       }
-    });
+    }).catch(e => notify(e.message, tab.id));
   }
   else if (info.menuItemId === 'page-link') {
     open(tab.url, new Native());
@@ -107,7 +121,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
   else if (info.menuItemId === 'download-hls') {
     chrome.tabs.create({
-      url: 'https://add0n.com/hls-downloader.html'
+      url: 'https://webextension.org/listing/hls-downloader.html'
     });
   }
   else {

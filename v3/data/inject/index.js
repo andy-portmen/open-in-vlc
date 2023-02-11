@@ -16,6 +16,7 @@ chrome.runtime.sendMessage({
     if (aO && aO.type === 'm3u8') {
       return -1;
     }
+    return aO.date - bO.date;
   })];
 
   response.forEach(([url, o], index) => {

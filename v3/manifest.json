@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "permissions": [
     "storage",
     "contextMenus",
@@ -20,7 +20,7 @@
   "background": {
     "service_worker": "worker.js"
   },
-  "homepage_url": "https://add0n.com/open-in-vlc.html",
+  "homepage_url": "https://webextension.org/listing/open-in-vlc.html",
   "icons": {
     "16": "data/icons/16.png",
     "32": "data/icons/32.png",

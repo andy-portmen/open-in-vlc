@@ -116,41 +116,77 @@ const open = (url, native) => {
   }
 };
 
-// clean up
-chrome.tabs.onRemoved.addListener(tabId => {
-  chrome.storage.session.remove(tabId + '');
-});
-
-function update(tabId) {
-  chrome.storage.session.get({
-    [tabId]: {}
-  }, prefs => {
-    const length = Object.keys(prefs[tabId]).length;
-    const title = length + ' media link' + (length === 1 ? '' : 's');
-    chrome.action.setTitle({
-      tabId,
-      title
-    });
-    chrome.action.setIcon({
-      tabId,
-      path: {
-        '16': '/data/icons/' + (length === 1 ? 'single' : 'multiple') + '/16.png',
-        '32': '/data/icons/' + (length === 1 ? 'single' : 'multiple') + '/32.png'
-      }
-    });
+function update(tabId, count = '') {
+  const title = count ? (count + ' media link' + (count === 1 ? '' : 's')) : chrome.runtime.getManifest().action['default_title'];
+  chrome.action.setTitle({
+    tabId,
+    title
+  });
+  const path = count ? (count === 1 ? 'single/' : 'multiple/') : '';
+  chrome.action.setIcon({
+    tabId,
+    path: {
+      '16': '/data/icons/' + path + '16.png',
+      '32': '/data/icons/' + path + '32.png'
+    }
   });
 }
 
-chrome.webRequest.onHeadersReceived.addListener(async d => {
-  if (d.type === 'main_frame') {
-    await new Promise(resolve => chrome.storage.session.set({
-      [d.tabId]: {}
-    }, resolve));
+const store = (tabId, href, type, size = '') => {
+  const date = Date.now();
+  chrome.storage.local.get({
+    'blacklist': [],
+    'max-number-of-items': 200
+  }, ps => {
+    if (ps.blacklist.length && new RegExp(ps.blacklist.join('|')).test(href)) {
+      return;
+    }
+    chrome.scripting.executeScript({
+      target: {
+        tabId: tabId
+      },
+      func: (max, href, type, size, date) => {
+        self.links = self.links || {};
+        self.links[href] = {
+          type,
+          size,
+          date
+        };
+        const c = Object.keys(self.links).length;
+        if (c > max) {
+          const dates = Object.values(self.links).map(o => o.date);
+          dates.sort();
+
+          const rd = dates.slice(0, c - max);
+
+          for (const [href, o] of Object.entries(self.links)) {
+            if (rd.includes(o.date)) {
+              delete self.links[href];
+            }
+          }
+        }
+
+        return Object.keys(self.links).length;
+      },
+      args: [ps['max-number-of-items'], href, type, size, date]
+    }).then(r => {
+      update(tabId, r ? r[0]?.result : '');
+    });
+  });
+};
+
+chrome.webRequest.onHeadersReceived.addListener(d => {
+  if (d.type === 'main_frame' || d.frameType === '"outermost_frame"') {
+    if (d.url.startsWith('https://www.youtube.com/watch?v=')) {
+      update(d.tabId, 1);
+    }
   }
+
   // do not detect YouTube
-  if (d.url && d.url.indexOf('.googlevideo.com/') !== -1) {
+  if (d.url && (d.url.includes('.googlevideo.com/') || (d.initiator || '').startsWith('https://www.youtube.com'))) {
     return;
   }
+
   let type = d.responseHeaders.filter(h => h.name === 'Content-Type' || h.name === 'content-type')
     .filter(h => h.value.startsWith('video') || h.value.startsWith('audio'))
     .map(h => h.value.split('/')[1].split(';')[0]).shift();
@@ -165,34 +201,13 @@ chrome.webRequest.onHeadersReceived.addListener(async d => {
   }
 
   if (type) {
-    chrome.storage.local.get({
-      blacklist: []
-    }, ps => chrome.storage.session.get({
-      [d.tabId]: {}
-    }, prefs => {
-      if (ps.blacklist.length && new RegExp(ps.blacklist.join('|')).test(d.url)) {
-        return;
-      }
-
-      prefs[d.tabId][d.url] = {
-        type,
-        size: d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift()
-      };
-      chrome.storage.session.set(prefs, () => update(d.tabId));
-    }));
+    const size = d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift();
+    store(d.tabId, d.url, type, size);
   }
 }, {
   urls: ['*://*/*'],
   types: ['main_frame', 'other', 'xmlhttprequest', 'media']
 }, ['responseHeaders']);
-
-chrome.tabs.onUpdated.addListener((id, info, tab) => {
-  if (info.url || info.favIconUrl) {
-    if (tab.url.startsWith('https://www.youtube.com/watch?v=')) {
-      return update(id);
-    }
-  }
-});
 
 const copy = async (tabId, content) => {
   try {
@@ -225,44 +240,53 @@ chrome.action.onClicked.addListener(tab => {
     open(tab.url, new Native(tab.id));
   }
   else {
-    chrome.storage.session.get({
-      [tab.id]: {}
-    }, async prefs => {
-      const links = Object.keys(prefs[tab.id]);
-      if (links.length === 1) {
-        const native = new Native(tab.id);
-        open(links[0], native);
+    chrome.scripting.executeScript({
+      target: {
+        tabId: tab.id
+      },
+      func: () => Object.keys(self.links || {})
+    }).then(async r => {
+      if (r) {
+        const links = r[0]?.result || [];
+
+        if (links.length === 1) {
+          const native = new Native(tab.id);
+          open(links[0], native);
+        }
+        else if (links.length > 1) {
+          await chrome.scripting.insertCSS({
+            target: {
+              tabId: tab.id
+            },
+            files: ['/data/inject/inject.css']
+          });
+          chrome.scripting.executeScript({
+            target: {
+              tabId: tab.id
+            },
+            files: ['/data/inject/inject.js']
+          });
+        }
+        else if (tab.url) {
+          open(tab.url, new Native(tab.id));
+        }
+        else {
+          notify('Cannot send an internal page to VLC', tab.id);
+        }
       }
-      else if (links.length > 1) {
-        await chrome.scripting.insertCSS({
-          target: {
-            tabId: tab.id
-          },
-          files: ['/data/inject/inject.css']
-        });
-        chrome.scripting.executeScript({
-          target: {
-            tabId: tab.id
-          },
-          files: ['/data/inject/inject.js']
-        });
-      }
-      else if (tab.url) {
-        open(tab.url, new Native(tab.id));
-      }
-      else {
-        notify('Cannot send an internal page to VLC', tab.id);
-      }
-    });
+    }).catch(e => notify(e, tab.id));
   }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
   if (request.cmd === 'get-links') {
-    chrome.storage.session.get({
-      [sender.tab.id]: {}
-    }, prefs => {
-      response([[sender.tab.url], ...Object.entries(prefs[sender.tab.id])]);
+    chrome.scripting.executeScript({
+      target: {
+        tabId: sender.tab.id
+      },
+      func: () => self.links || {}
+    }).then(r => {
+      response([[sender.tab.url], ...Object.entries(r[0]?.result || {})]);
     });
     return true;
   }

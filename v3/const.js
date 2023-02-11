@@ -4,6 +4,6 @@ const TYPES = [
   'm4v', 'avi', 'wmv', 'mov', 'flv', 'ogv', '3gp', '3g2',
   // audio
   'aac', 'mp3', 'oga', 'opus', 'wav', 'weba', 'flac', 'pcm', 'm4a', 'aifc', 'aiff',
-  // rar, zip
+  // archive
   'zip', 'rar'
 ];

@@ -14,21 +14,23 @@
 
   <div class="one">
     <label for="media-types">Show "Open in VLC" context menu for the following file extensions</label>
-    <textarea rows="5" id="media-types"></textarea>
+    <textarea rows="5" id="media-types" placeholder="avi, mid, webm, mpg, mp2, mpeg, ..."></textarea>
   </div>
 
   <div class="one">
     <label for="blacklist"><a data-href="faq12" target="_blank">Filter URLs or Media Types</a> (separated by comma)</label>
-    <input type="text" id="blacklist" placeholder="example: youtube, w3schools.com, mp4, avi">
+    <textarea rows="2" id="blacklist" placeholder="example: youtube, w3schools.com, mp4, avi"></textarea>
   </div>
 
   <div class="two">
-    <input type="checkbox" id="m3u8">
     <label for="m3u8"><a target="_blank" data-href="faq11">M3U8</a> Container</label>
-    <input type="checkbox" id="use-page-title">
+    <input type="checkbox" id="m3u8">
     <label for="use-page-title">Use <a data-href="faq14" target="_blank">Page Title</a> for M3U8 Tracks</label>
-    <input type="checkbox" id="faqs">
+    <input type="checkbox" id="use-page-title">
     <label for="faqs">Open FAQs Page on Updates</label>
+    <input type="checkbox" id="faqs">
+    <label for="max-number-of-items">Maximum number of recordings per tab</label>
+    <input type="number" min="5" id="max-number-of-items">
   </div>
 
   <div data-cols="3" id="explore"></div>
