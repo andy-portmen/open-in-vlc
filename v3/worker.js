@@ -1,13 +1,6 @@
-/* global Native */
+/* global Native, TYPES */
 
-const TYPES = [
-  // video
-  'avi', 'mid', 'webm', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'ogg', 'mp4', 'm4p',
-  'm4v', 'avi', 'wmv', 'mov', 'flv', 'ogv', '3gp', '3g2',
-  // audio
-  'aac', 'mp3', 'oga', 'opus', 'wav', 'weba', 'flac', 'pcm', 'm4a', 'aifc', 'aiff'
-];
-
+self.importScripts('const.js');
 self.importScripts('native.js');
 self.importScripts('context.js');
 

@@ -1,3 +1,4 @@
+/* global TYPES */
 'use strict';
 
 const toast = document.getElementById('toast');
@@ -8,13 +9,15 @@ document.addEventListener('DOMContentLoaded', () => {
     'm3u8': true,
     'use-page-title': true,
     'faqs': true,
-    'blacklist': []
+    'blacklist': [],
+    'media-types': TYPES
   }, prefs => {
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
     document.getElementById('use-page-title').checked = prefs['use-page-title'];
     document.getElementById('faqs').checked = prefs.faqs;
     document.getElementById('blacklist').value = prefs.blacklist.join(', ');
+    document.getElementById('media-types').value = prefs['media-types'].join(', ');
   });
 });
 document.getElementById('save').addEventListener('click', () => {
@@ -24,6 +27,9 @@ document.getElementById('save').addEventListener('click', () => {
     'faqs': document.getElementById('faqs').checked,
     'use-page-title': document.getElementById('use-page-title').checked,
     'blacklist': document.getElementById('blacklist').value.split(/\s*,\s*/).filter((s, i, l) => {
+      return s && l.indexOf(s) === i;
+    }),
+    'media-types': document.getElementById('media-types').value.split(/\s*,\s*/).filter((s, i, l) => {
       return s && l.indexOf(s) === i;
     })
   }, () => {

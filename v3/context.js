@@ -1,4 +1,4 @@
-/* global Native, copy, notify */
+/* global Native, TYPES, copy, notify */
 
 const context = () => {
   chrome.contextMenus.create({
@@ -7,39 +7,7 @@ const context = () => {
     contexts: ['video', 'audio'],
     documentUrlPatterns: ['*://*/*', 'file://*/*']
   });
-  chrome.contextMenus.create({
-    id: 'link',
-    title: 'Open in VLC',
-    contexts: ['link'],
-    documentUrlPatterns: ['*://*/*', 'file://*/*'],
-    targetUrlPatterns: [
-      '*://www.youtube.com/watch?v=*',
-      '*://www.youtube.com/embed/*',
-      '*://www.google.com/url?*www.youtube.com%2Fwatch*',
-      '*://*/*.avi*',
-      '*://*/*.mp4*',
-      '*://*/*.webm*',
-      '*://*/*.flv*',
-      '*://*/*.mov*',
-      '*://*/*.ogv*',
-      '*://*/*.3gp*',
-      '*://*/*.mpg*',
-      '*://*/*.wmv*',
-      '*://*/*.swf*',
-      '*://*/*.mkv*',
-      '*://*/*.pcm*',
-      '*://*/*.wav*',
-      '*://*/*.aac*',
-      '*://*/*.ogg*',
-      '*://*/*.wma*',
-      '*://*/*.flac*',
-      '*://*/*.mid*',
-      '*://*/*.mka*',
-      '*://*/*.m4a*',
-      '*://*/*.mp3*',
-      '*://*/*.voc*'
-    ]
-  });
+  context.link();
   chrome.contextMenus.create({
     id: 'page',
     title: 'Open in VLC',
@@ -79,8 +47,36 @@ const context = () => {
     contexts: ['action', 'browser_action']
   });
 };
+context.link = () => chrome.storage.local.get({
+  'media-types': TYPES
+}, prefs => {
+  chrome.contextMenus.remove('link', () => {
+    chrome.runtime.lastError;
+    const types = prefs['media-types'];
+
+    if (types.length) {
+      chrome.contextMenus.create({
+        id: 'link',
+        title: 'Open in VLC',
+        contexts: ['link'],
+        documentUrlPatterns: ['*://*/*', 'file://*/*'],
+        targetUrlPatterns: [
+          '*://www.youtube.com/watch?v=*',
+          '*://www.youtube.com/embed/*',
+          '*://www.google.com/url?*www.youtube.com%2Fwatch*',
+          ...types.map(s => `*://*/*.${s}*`)
+        ]
+      });
+    }
+  });
+});
 chrome.runtime.onStartup.addListener(context);
 chrome.runtime.onInstalled.addListener(context);
+chrome.storage.onChanged.addListener(ps => {
+  if (ps['media-types']) {
+    context.link();
+  }
+});
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'copy-links') {
