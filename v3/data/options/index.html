@@ -22,9 +22,18 @@
     <textarea rows="2" id="blacklist" placeholder="example: youtube, w3schools.com, mp4, avi"></textarea>
   </div>
 
+  <div class="one">
+    <label for="user-argument-string"><a data-href="faq16" target="_blank">Custom Arguments</a></label>
+    <textarea rows="2" id="user-argument-string" placeholder="example: --autoscale --video-on-top"></textarea>
+  </div>
+
   <div class="two">
     <label for="m3u8"><a target="_blank" data-href="faq11">M3U8</a> Container</label>
     <input type="checkbox" id="m3u8">
+    <label for="one-instance">Open VLC in one instance mode</label>
+    <input type="checkbox" id="one-instance">
+    <label for="send-title-meta">Send <a data-href="faq14" target="_blank">Page Title</a> as VLC argument</label>
+    <input type="checkbox" id="send-title-meta">
     <label for="use-page-title">Use <a data-href="faq14" target="_blank">Page Title</a> for M3U8 Tracks</label>
     <input type="checkbox" id="use-page-title">
     <label for="faqs">Open FAQs Page on Updates</label>
@@ -46,6 +55,7 @@
 
   <script src="matched.js"></script>
   <script src="/const.js"></script>
+  <script src="termlib_parser.js"></script>
   <script src="index.js"></script>
 </body>
 </html>

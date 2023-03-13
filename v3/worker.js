@@ -4,7 +4,12 @@ self.importScripts('const.js');
 self.importScripts('native.js');
 self.importScripts('context.js');
 
-const notify = (e, tabId) => {
+const is = {
+  mac: /Mac/i.test(navigator.platform),
+  linux: /Linux/i.test(navigator.platform)
+};
+
+const notify = self.notify = (e, tabId) => {
   chrome.action.setTitle({
     tabId,
     title: e.message || e
@@ -60,24 +65,60 @@ const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
   `
 }, callback));
 
-const open = (url, native) => {
-  // decode
-  if (url.startsWith('https://www.google.') && url.indexOf('&url=') !== -1) {
-    url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
-  }
+const open = (tab, native) => {
+  let {url} = tab;
+  const {title} = tab;
 
-  if (navigator.userAgent.indexOf('Mac') !== -1) {
-    native.exec('open', ['-a', 'VLC', url]);
-  }
-  else {
-    chrome.storage.local.get({
-      path: null
-    }, prefs => {
-      if (navigator.userAgent.indexOf('Linux') !== -1) {
-        native.exec(prefs.path || 'vlc', [url]);
+  chrome.storage.local.get({
+    'path': null,
+    'send-title-meta': true,
+    'one-instance': true,
+    'custom-arguments': []
+  }, prefs => {
+    const args = prefs['custom-arguments'];
+    // macOS does not support this argument
+    if (prefs['one-instance'] && is.mac === false) {
+      args.push('--one-instance');
+    }
+
+    // decode
+    if (url.startsWith('https://www.google.') && url.indexOf('&url=') !== -1) {
+      url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
+    }
+
+    args.push(url); // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
+
+    if (title && prefs['send-title-meta']) {
+      if (is.mac && prefs['one-instance']) { // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
+        args.push(`--meta-title=${title}`);
+      }
+      else {
+        args.push(`:meta-title=${title}`);
+      }
+    }
+
+    if (is.mac) {
+      if (prefs['one-instance']) {
+        const href = url;
+        args.splice(args.indexOf(url), 1);
+
+        const mArgs = ['-a', 'VLC', href];
+        if (args.length > 0) {
+          mArgs.push('--args', ...args);
+        }
+
+        native.exec('open', mArgs);
+      }
+      else {
+        native.exec('/Applications/VLC.app/Contents/MacOS/VLC', args);
+      }
+    }
+    else {
+      if (is.linux) {
+        native.exec(prefs.path || 'vlc', args);
       }
       else if (prefs.path) {
-        native.exec(prefs.path, [url]);
+        native.exec(prefs.path, args);
       }
       else { // Windows
         native.env(res => {
@@ -108,12 +149,12 @@ const open = (url, native) => {
             const path = r && r.d[1] ? paths[1] : (res.env['ProgramFiles(x86)'] ? paths[0] : paths[1]);
             chrome.storage.local.set({
               path
-            }, () => native.exec(path, [url]));
+            }, () => native.exec(path, args));
           });
         });
       }
-    });
-  }
+    }
+  });
 };
 
 function update(tabId, count = '') {
@@ -237,7 +278,7 @@ const copy = async (tabId, content) => {
 chrome.action.onClicked.addListener(tab => {
   // VLC can play YouTube. Allow user to send the YouTube link to VLC
   if (tab.url && tab.url.startsWith('https://www.youtube.com/watch?v=')) {
-    open(tab.url, new Native(tab.id));
+    open(tab, new Native(tab.id));
   }
   else {
     chrome.scripting.executeScript({
@@ -251,7 +292,10 @@ chrome.action.onClicked.addListener(tab => {
 
         if (links.length === 1) {
           const native = new Native(tab.id);
-          open(links[0], native);
+          open({
+            title: tab.title,
+            url: links[0]
+          }, native);
         }
         else if (links.length > 1) {
           await chrome.scripting.insertCSS({
@@ -268,7 +312,7 @@ chrome.action.onClicked.addListener(tab => {
           });
         }
         else if (tab.url) {
-          open(tab.url, new Native(tab.id));
+          open(tab, new Native(tab.id));
         }
         else {
           notify('Cannot send an internal page to VLC', tab.id);
@@ -305,7 +349,10 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
   }
   else if (request.cmd === 'open-in') {
     const native = new Native(sender.tab.id);
-    open(request.url, native);
+    open({
+      title: sender.tab.title,
+      url: request.url
+    }, native);
   }
   else if (request.cmd === 'combine') {
     chrome.storage.local.get({
@@ -318,7 +365,10 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
             notify(resp.err, sender.tab.id);
           }
           else if (resp && resp.filename) {
-            open(resp.filename, native);
+            open({
+              title: sender.tab.title,
+              url: resp.filename
+            }, native);
           }
           else {
             chrome.tabs.create({
@@ -329,7 +379,10 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
       }
       else {
         for (const url of request.urls) {
-          open(url, native);
+          open({
+            title: sender.tab.title,
+            url
+          }, native);
         }
       }
     });

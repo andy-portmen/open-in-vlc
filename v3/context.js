@@ -107,7 +107,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }).catch(e => notify(e.message, tab.id));
   }
   else if (info.menuItemId === 'page-link') {
-    open(tab.url, new Native());
+    open(tab, new Native());
   }
   else if (info.menuItemId === 'audio-joiner') {
     chrome.tabs.create({
@@ -125,6 +125,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     });
   }
   else {
-    open(info.srcUrl || info.linkUrl || info.pageUrl, new Native());
+    open({
+      title: tab.title,
+      url: info.srcUrl || info.linkUrl || info.pageUrl
+    }, new Native());
   }
 });

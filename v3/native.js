@@ -22,7 +22,7 @@ const Native = function(tabId) {
 -----
 Code: ${res.code}
 Output: ${res.stdout}
-Error: ${res.stderr}`, this.tabId);
+Error: ${res.stderr}`, tabId);
     }
     else if (this.callback) {
       this.callback(res);
