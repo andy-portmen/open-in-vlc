@@ -1,10 +1,30 @@
-body {
-  font-size: 13px;
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  background-color: #fff;
-  color: #4d5156;
-  margin: 10px;
+:root {
+  --clr: #4d5156;
+  --bg: #fff;
+  --link: #0374ff;
+
+  color-scheme: light;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --clr: #bdc6cf;
+    --bg: #202124;
+    --link: #9ac8ff;
+
+    color-scheme: dark;
+  }
+}
+
+body {
+  font-size: 14px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  background-color: var(--bg);
+  color: var(--clr);
+  width: min(100% - 2rem, 70rem);
+  margin-inline: auto;
+}
+
 button,
 input[type=submit],
 input[type=button] {
@@ -31,19 +51,13 @@ textarea,
 input[type=text],
 input[type=number] {
   padding: 5px;
-  outline: none;
 }
 input[type=number] {
   width: 5ch;
 }
-textarea:focus,
-input[type=text]:focus,
-input[type=number]:focus {
-  background-color: #e5f8ff;
-}
 a,
 a:visited {
-  color: #07c;
+  color: var(--link);
   text-decoration: none;
 }
 

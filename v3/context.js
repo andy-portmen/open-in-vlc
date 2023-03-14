@@ -1,14 +1,15 @@
 /* global Native, TYPES, copy, notify */
 
+const create = o => chrome.contextMenus.create(o, () => chrome.runtime.lastError);
 const context = () => {
-  chrome.contextMenus.create({
+  create({
     id: 'player',
     title: 'Open in VLC',
     contexts: ['video', 'audio'],
     documentUrlPatterns: ['*://*/*', 'file://*/*']
   });
   context.link();
-  chrome.contextMenus.create({
+  create({
     id: 'page',
     title: 'Open in VLC',
     contexts: ['page'],
@@ -16,32 +17,32 @@ const context = () => {
       '*://www.youtube.com/watch?v=*'
     ]
   });
-  chrome.contextMenus.create({
+  create({
     id: 'copy-links',
     title: 'Copy Media Links to the Clipboard',
     contexts: ['action', 'browser_action']
   });
-  chrome.contextMenus.create({
+  create({
     id: 'page-link',
     title: 'Send Page Link to VLC',
     contexts: ['action', 'browser_action']
   });
-  chrome.contextMenus.create({
+  create({
     id: 'separator',
     type: 'separator',
     contexts: ['action', 'browser_action']
   });
-  chrome.contextMenus.create({
+  create({
     id: 'download-hls',
     title: 'Download Live Streams',
     contexts: ['action', 'browser_action']
   });
-  chrome.contextMenus.create({
+  create({
     id: 'audio-joiner',
     title: 'Join Audio Files',
     contexts: ['action', 'browser_action']
   });
-  chrome.contextMenus.create({
+  create({
     id: 'mp3-converter',
     title: 'Convert to MP3',
     contexts: ['action', 'browser_action']
@@ -55,7 +56,7 @@ context.link = () => chrome.storage.local.get({
     const types = prefs['media-types'];
 
     if (types.length) {
-      chrome.contextMenus.create({
+      create({
         id: 'link',
         title: 'Open in VLC',
         contexts: ['link'],

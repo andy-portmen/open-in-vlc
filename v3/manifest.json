@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "permissions": [
     "storage",
     "contextMenus",
@@ -31,7 +31,8 @@
     "512": "data/icons/512.png"
   },
   "options_ui": {
-    "page": "data/options/index.html"
+    "page": "data/options/index.html",
+    "open_in_tab": true
   },
   "action": {
     "default_title": "__MSG_page_action__"
