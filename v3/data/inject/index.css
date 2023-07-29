@@ -1,0 +1,43 @@
+html {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  padding: 10px;
+  box-sizing: border-box;
+  color: #202124;
+  background-color: #ffecd8;
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 13px;
+}
+select {
+  width: 100%;
+  flex: 1;
+  outline: none;
+  border: solid 1px #f7ba79;
+}
+option {
+  padding: 3px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#toolbar {
+  display: grid;
+  grid-template-columns: 1fr min-content min-content min-content;
+  grid-gap: 2px;
+  margin-top: 2px;
+}
+input {
+  border: solid 1px #f7ba79;
+  color: #202124;
+  background-color: #fff;
+  padding: 5px 10px;
+  cursor: pointer;
+  outline: none;
+}
+[data-cmd=close-me] {
+  justify-self: start;
+}

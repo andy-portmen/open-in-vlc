@@ -65,7 +65,7 @@ const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
   `
 }, callback));
 
-const open = (tab, native) => {
+const open = (tab, tabId) => {
   let {url} = tab;
   const {title} = tab;
 
@@ -82,7 +82,7 @@ const open = (tab, native) => {
     }
 
     // decode
-    if (url.startsWith('https://www.google.') && url.indexOf('&url=') !== -1) {
+    if (url.startsWith('https://www.google.') && url.includes('&url=')) {
       url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
     }
 
@@ -96,6 +96,8 @@ const open = (tab, native) => {
         args.push(`:meta-title=${title}`);
       }
     }
+
+    const native = new Native(tabId);
 
     if (is.mac) {
       if (prefs['one-instance']) {
@@ -121,7 +123,7 @@ const open = (tab, native) => {
         native.exec(prefs.path, args);
       }
       else { // Windows
-        native.env(res => {
+        native.env().then(res => {
           const paths = [
             res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe',
             res.env['ProgramFiles'] + '\\VideoLAN\\VLC\\vlc.exe'
@@ -163,6 +165,11 @@ function update(tabId, count = '') {
     tabId,
     title
   });
+  // chrome.action.setBadgeText({
+  //   tabId,
+  //   text: count && count > 1 ? count.toString() : ''
+  // });
+
   const path = count ? (count === 1 ? 'single/' : 'multiple/') : '';
   chrome.action.setIcon({
     tabId,
@@ -278,7 +285,7 @@ const copy = async (tabId, content) => {
 chrome.action.onClicked.addListener(tab => {
   // VLC can play YouTube. Allow user to send the YouTube link to VLC
   if (tab.url && tab.url.startsWith('https://www.youtube.com/watch?v=')) {
-    open(tab, new Native(tab.id));
+    open(tab, tab.id);
   }
   else {
     chrome.scripting.executeScript({
@@ -291,11 +298,10 @@ chrome.action.onClicked.addListener(tab => {
         const links = r[0]?.result || [];
 
         if (links.length === 1) {
-          const native = new Native(tab.id);
           open({
             title: tab.title,
             url: links[0]
-          }, native);
+          }, tab.id);
         }
         else if (links.length > 1) {
           await chrome.scripting.insertCSS({
@@ -312,7 +318,7 @@ chrome.action.onClicked.addListener(tab => {
           });
         }
         else if (tab.url) {
-          open(tab, new Native(tab.id));
+          open(tab, tab.id);
         }
         else {
           notify('Cannot send an internal page to VLC', tab.id);
@@ -348,17 +354,15 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     });
   }
   else if (request.cmd === 'open-in') {
-    const native = new Native(sender.tab.id);
     open({
       title: sender.tab.title,
       url: request.url
-    }, native);
+    }, sender.tab.id);
   }
   else if (request.cmd === 'combine') {
     chrome.storage.local.get({
       'm3u8': true
     }, prefs => {
-      const native = new Native(sender.tab.id);
       if (prefs.m3u8) {
         toM3U8(request.urls, resp => {
           if (resp && resp.err) {
@@ -368,7 +372,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
             open({
               title: sender.tab.title,
               url: resp.filename
-            }, native);
+            }, sender.tab.id);
           }
           else {
             chrome.tabs.create({
@@ -382,12 +386,20 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
           open({
             title: sender.tab.title,
             url
-          }, native);
+          }, sender.tab.id);
         }
       }
     });
   }
 });
+
+{
+  const once = () => chrome.action.setBadgeBackgroundColor({
+    color: '#e17960'
+  });
+  chrome.runtime.onInstalled.addListener(once);
+  chrome.runtime.onStartup.addListener(once);
+}
 
 /* FAQs & Feedback */
 {

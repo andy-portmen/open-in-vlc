@@ -23,7 +23,7 @@ chrome.runtime.sendMessage({
     const option = document.createElement('option');
 
     let ext = o && o.type ? o.type : url.split(/[#?]/)[0].split('.').pop().trim();
-    if (ext.indexOf('/') !== -1) {
+    if (ext.includes('/')) {
       ext = '';
     }
     ext = ext.substr(0, 6);

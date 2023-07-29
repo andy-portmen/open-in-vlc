@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "permissions": [
     "storage",
     "contextMenus",
@@ -22,16 +22,16 @@
   },
   "homepage_url": "https://webextension.org/listing/open-in-vlc.html",
   "icons": {
-    "16": "data/icons/16.png",
-    "32": "data/icons/32.png",
-    "48": "data/icons/48.png",
-    "64": "data/icons/64.png",
-    "128": "data/icons/128.png",
-    "256": "data/icons/256.png",
-    "512": "data/icons/512.png"
+    "16": "/data/icons/16.png",
+    "32": "/data/icons/32.png",
+    "48": "/data/icons/48.png",
+    "64": "/data/icons/64.png",
+    "128": "/data/icons/128.png",
+    "256": "/data/icons/256.png",
+    "512": "/data/icons/512.png"
   },
   "options_ui": {
-    "page": "data/options/index.html",
+    "page": "/data/options/index.html",
     "open_in_tab": true
   },
   "action": {
