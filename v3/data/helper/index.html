@@ -10,7 +10,11 @@
   <h1>Native Integration</h1>
   <p>For the extension to work (connect to a native application), there is one extra step. Please download, unzip and install this open-source NodeJS native client.</p>
   <ul id="steps">
-    <li class="step1">Click <a href="#" data-cmd="download">here</a> to download the package for you OS (Window, Mac, and Linux are currently supported) or click <a href="https://github.com/andy-portmen/native-client/releases" target="_blank">here</a> to browse all available download options.</li>
+    <li>Select the runtime <select id="runtime">
+      <option value="com.add0n.node">NodeJS (com.add0n.node)</option>
+      <option value="org.webextension.bun">BunJS (org.webextension.bun)</option>
+    </select></li>
+    <li class="step1">Click <a href="#" data-cmd="download">here</a> to download the package for you OS or click <a href="https://github.com/andy-portmen/native-client/releases" target="_blank">native-client/releases</a> or <a href="https://github.com/andy-portmen/native-client-bunjs/releases" target="_blank">native-client-bunjs/releases</a> to browse all available download options.</li>
     <li>Extract the downloaded package in a local directory</li>
     <li class="linux">Now open a terminal in this directory (the directory that contains install.sh and uninstall.sh) and run <code>./install.sh</code></li>
     <li class="windows">Now double-click the <code>install.bat</code> file</li>
@@ -25,6 +29,8 @@
       <li>The installer script copies a few files to two different locations for your browser to be able to detect this native client. If you already have NodeJS in your system, the installed version of NodeJS will be used. So please make sure you have an up-to-date version of NodeJS installed. If you don't have this application, the portable version will be used. Read more <a target="_blank" href="https://github.com/andy-portmen/native-client">here</a>.</li>
       <li>To completely remove this native client, run <code class="linux">./uninstall.sh</code><code class="windows">uninstall.bat</code>.</li>
       <li>To make sure the native client is accessible, click on the "<a href="#" data-cmd="check">Check Connection</a>" button. <span id="alternative">If you still get this page even when the "Check Button" reports successful connection, it means the application cannot be accessed (path is not correct in the <a href="#" data-cmd="options">options page</a>)</span>. If the path to the executable is correct and the native client is connected, you can debug the connection by enabling console logs in <a target="_blank" href="https://www.chromium.org/for-testers/enable-logging">Chrome, Edge and Opera</a> or <a target="_blank" href="https://developer.mozilla.org/docs/Tools/Browser_Console">Firefox</a>.</li>
+      <li>NodeJS (com.add0n.node) is based on <a href="https://nodejs.org/" target="_blank">NodeJS</a>. This package contains the NodeJS binary and automatically uses it if NodeJS is absent from the user's system. Meanwhile, BunJS (org.webextension.bun) is built upon <a href="https://bun.sh/" target="_blank">BunJS</a> but lacks the BunJS executable. Therefore, ensure BunJS is installed on your system to use this runtime. NodeJS runtime is compatible with Windows, Linux, and macOS, while BunJS runtime currently is only compatible with Linux and macOS.</li>
+      <li>If you are installing an unpacked extension, add <code id="guid">-</code> to the list of supported extensions before installing the native client.</li>
     </ul>
   </div>
 

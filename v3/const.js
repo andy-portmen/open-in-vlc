@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const TYPES = [
   // video
   'avi', 'mid', 'webm', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'ogg', 'mp4', 'm4p',

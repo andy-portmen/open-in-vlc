@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'blacklist': [],
     'media-types': TYPES,
     'max-number-of-items': 200,
-    'user-argument-string': ''
+    'user-argument-string': '',
+    'runtime': 'com.add0n.node'
   }, prefs => {
     document.getElementById('path').value = prefs.path;
     document.getElementById('m3u8').checked = prefs.m3u8;
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('blacklist').value = prefs.blacklist.join(', ');
     document.getElementById('media-types').value = prefs['media-types'].join(', ');
     document.getElementById('user-argument-string').value = prefs['user-argument-string'];
+    document.getElementById('runtime').value = prefs['runtime'];
   });
 });
 document.getElementById('save').addEventListener('click', () => {
@@ -53,6 +55,7 @@ document.getElementById('save').addEventListener('click', () => {
   }
 
   chrome.storage.local.set({
+    'runtime': document.getElementById('runtime').value,
     'path': document.getElementById('path').value,
     'm3u8': document.getElementById('m3u8').checked,
     'faqs': document.getElementById('faqs').checked,
@@ -88,17 +91,25 @@ document.getElementById('reset').addEventListener('click', e => {
     });
   }
 });
+
 // support
 document.getElementById('support').addEventListener('click', () => chrome.tabs.create({
   url: chrome.runtime.getManifest().homepage_url + '?rd=donate'
 }));
+
+// usage
+document.getElementById('usage').addEventListener('click', () => chrome.tabs.create({
+  url: 'https://www.youtube.com/watch?v=PtBh9JzeueE'
+}));
+
+// helper
+document.getElementById('helper').addEventListener('click', () => chrome.tabs.create({
+  url: '/data/helper/index.html'
+}));
+
 // links
 for (const a of [...document.querySelectorAll('[data-href]')]) {
   if (a.hasAttribute('href') === false) {
     a.href = chrome.runtime.getManifest().homepage_url + '#' + a.dataset.href;
   }
 }
-// usage
-document.getElementById('usage').addEventListener('click', () => chrome.tabs.create({
-  url: 'https://www.youtube.com/watch?v=PtBh9JzeueE'
-}));

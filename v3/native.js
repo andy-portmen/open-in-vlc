@@ -1,12 +1,12 @@
+// eslint-disable-next-line no-unused-vars
 class Native {
-  #id = 'com.add0n.node';
-
-  constructor(tabId) {
+  constructor(tabId, runtime) {
     this.tabId = tabId;
+    this.runtime = runtime;
   }
   #run(command) {
     return new Promise((resolve, reject) => {
-      const channel = chrome.runtime.connectNative(this.#id);
+      const channel = chrome.runtime.connectNative(this.runtime);
       channel.onDisconnect.addListener(() => {
         const {lastError} = chrome.runtime;
         const msg = lastError?.message || 'DISCONNECTED';

@@ -108,7 +108,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }).catch(e => notify(e.message, tab.id));
   }
   else if (info.menuItemId === 'page-link') {
-    open(tab, new Native());
+    chrome.storage.local.get({
+      'runtime': 'com.add0n.node'
+    }, prefs => open(tab, new Native(undefined, prefs.runtime)));
   }
   else if (info.menuItemId === 'audio-joiner') {
     chrome.tabs.create({

@@ -81,6 +81,7 @@ class NotificationView extends HTMLElement {
           grid-template-columns: calc(24px + var(--gap)) 1fr 24px;
           align-items: center;
           grid-gap: var(--gap);
+          white-space: break-spaces;
         }
         svg {
           width: 24px;

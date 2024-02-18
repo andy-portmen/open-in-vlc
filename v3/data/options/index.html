@@ -4,12 +4,23 @@
   <title>Options Page :: Open in VLC</title>
   <link rel="stylesheet" type="text/css" href="index.css">
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
   <div class="one">
     <label for="path">Path to the VLC <a target="_blank" data-href="faq13">executable</a>:</label>
     <input type="text" id="path" placeholder="example: C:\VLC\vlc.exe">
+  </div>
+
+  <div class="one">
+    <label for="runtime"><a data-href="faq17" target="_blank">Runtime</a> for Native Client</label>
+    <div>
+      <select id="runtime">
+        <option value="com.add0n.node">NodeJS (com.add0n.node)</option>
+        <option value="org.webextension.bun">BunJS (org.webextension.bun)</option>
+      </select>
+    </div>
   </div>
 
   <div class="one">
@@ -28,7 +39,7 @@
   </div>
 
   <div class="two">
-    <label for="m3u8"><a target="_blank" data-href="faq11">M3U8</a> Container</label>
+    <label for="m3u8">Use <a target="_blank" data-href="faq11">M3U8</a> Container</label>
     <input type="checkbox" id="m3u8">
     <label for="one-instance">Open VLC in one instance mode</label>
     <input type="checkbox" id="one-instance">
@@ -42,18 +53,16 @@
     <input type="number" min="5" id="max-number-of-items">
   </div>
 
-  <div data-cols="3" id="explore"></div>
-
   <p>
     <button id="usage">Usage Instruction</button>
     <button id="support">Support Development</button>
   </p>
   <p>
+    <button id="helper">Open Helper Page</button>
     <button id="reset">Factory Reset</button>
     <button id="save"><b>Save Options</b></button> <span id="toast"></span>
   </p>
 
-  <script src="matched.js"></script>
   <script src="/const.js"></script>
   <script src="termlib_parser.js"></script>
   <script src="index.js"></script>

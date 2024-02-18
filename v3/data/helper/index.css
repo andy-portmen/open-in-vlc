@@ -5,8 +5,8 @@
 
 body {
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-  font-size: 13px;
-  line-height: 1.3em;
+  font-size: 14px;
+  line-height: 1.5em;
   background-color: #fff;
   color: var(--clc);
   margin: 0;
@@ -66,6 +66,9 @@ a:visited {
 li {
   padding: 3px 0;
 }
+select {
+  padding: 2px 5px;
+}
 .guide {
   padding-left: 10px;
 }
@@ -83,4 +86,8 @@ body[data-installed=true] #alternative {
 }
 body[data-installed=true] .canhide {
   opacity: 0.5;
+}
+code {
+  background-color: rgba(0, 0, 0, 0.07);
+  padding: 3px 5px;
 }

@@ -33,8 +33,9 @@ const notify = self.notify = (e, tabId) => {
 
 // handle multiple links
 const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
-  'use-page-title': true
-}, prefs => chrome.runtime.sendNativeMessage('com.add0n.node', {
+  'use-page-title': true,
+  'runtime': 'com.add0n.node'
+}, prefs => chrome.runtime.sendNativeMessage(prefs.runtime, {
   permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
   args: [`#EXTM3U
 ` + urls.map(url => {
@@ -73,7 +74,8 @@ const open = (tab, tabId) => {
     'path': null,
     'send-title-meta': true,
     'one-instance': true,
-    'custom-arguments': []
+    'custom-arguments': [],
+    'runtime': 'com.add0n.node'
   }, prefs => {
     const args = prefs['custom-arguments'];
     // macOS does not support this argument
@@ -89,7 +91,8 @@ const open = (tab, tabId) => {
     args.push(url); // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
 
     if (title && prefs['send-title-meta']) {
-      if (is.mac && prefs['one-instance']) { // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
+      // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
+      if (is.mac && prefs['one-instance']) {
         args.push(`--meta-title=${title}`);
       }
       else {
@@ -97,7 +100,7 @@ const open = (tab, tabId) => {
       }
     }
 
-    const native = new Native(tabId);
+    const native = new Native(tabId, prefs.runtime);
 
     if (is.mac) {
       if (prefs['one-instance']) {
@@ -128,7 +131,7 @@ const open = (tab, tabId) => {
             res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe',
             res.env['ProgramFiles'] + '\\VideoLAN\\VLC\\vlc.exe'
           ];
-          chrome.runtime.sendNativeMessage('com.add0n.node', {
+          chrome.runtime.sendNativeMessage(prefs.runtime, {
             permissions: ['fs'],
             args: [...paths],
             script: `
