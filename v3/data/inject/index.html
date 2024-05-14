@@ -7,7 +7,13 @@
 </head>
 <body>
   <div style="margin-bottom: 5px;">Select media links among <span id="number">...</span> detected links:</div>
-  <select size=8 multiple></select>
+  <simple-list-view id="list" drag="false" headers="false">
+    <span width="4ch"></span>
+    <span width="6ch"></span>
+    <span width="1fr"></span>
+    <span width="8ch"></span>
+  </simple-list-view>
+
   <div style="margin: 5px 0;">Use Ctrl key on Windows or Command key on Mac to select multiple items.</div>
   <div id="toolbar">
     <input type="button" value="Close" data-cmd="close-me">
@@ -15,6 +21,7 @@
     <input type="button" value="Copy to Clipboard" data-cmd="copy">
     <input type="button" value="Open in VLC" data-cmd="open-in">
   </div>
+  <script src="components/list-view.js"></script>
   <script src="index.js"></script>
 </body>
 </html>

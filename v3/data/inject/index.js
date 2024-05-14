@@ -1,12 +1,23 @@
 'use strict';
 
-const select = document.querySelector('select');
+const list = document.getElementById('list');
+
+const formatBytes = (bytes, decimals = 0) => {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
 
 chrome.runtime.sendMessage({
   cmd: 'get-links'
 }, response => {
   document.getElementById('number').textContent = response.length;
-
 
   let active = 0;
   response = [response[0], ...response.slice(1).sort(([, aO], [, bO]) => {
@@ -20,34 +31,66 @@ chrome.runtime.sendMessage({
   })];
 
   response.forEach(([url, o], index) => {
-    const option = document.createElement('option');
-
     let ext = o && o.type ? o.type : url.split(/[#?]/)[0].split('.').pop().trim();
     if (ext.includes('/')) {
       ext = '';
     }
     ext = ext.substr(0, 6);
 
-    // select media
-    if (active === 0) {
-      if (ext === 'm3u8' || (o && o.size && Number(o.size) > 1024)) {
-        active = index;
+    if (index) {
+      // select media
+      if (active === 0) {
+        if (ext === 'm3u8' || (o && o.size && Number(o.size) > 1024)) {
+          active = index;
+        }
       }
-    }
 
-    option.title = option.value = url;
-    option.textContent = index ? (('0' + index).substr(-2) + '. ' + (ext ? `[${ext}] ` : '') + url) : 'Page URL: ' + url;
-    select.appendChild(option);
+      const size = o.size ? formatBytes(Number(o.size)) : '';
+      const tooltip = `Type: ${ext}
+Size: ${size}
+URL: ${url}`;
+      const option = list.option([{
+        name: index.toString().padStart(2, '0'),
+        part: 'index'
+      }, {
+        name: ext || '',
+        part: 'ext'
+      }, {
+        name: url
+      }, {
+        name: size,
+        part: 'size'
+      }], tooltip, url, false);
+
+      option.insert();
+    }
+    else {
+      const option = list.option([{
+        name: '00',
+        part: 'index'
+      }, {
+        name: 'Page',
+        part: 'ext'
+      }, {
+        name: url
+      }, {
+        name: '',
+        part: 'size'
+      }], url, url, false);
+
+      option.insert();
+    }
   });
-  select.value = response[active][0];
+
+  list.selectedIndex = active + 1;
 });
-window.addEventListener('load', () => window.setTimeout(() => {
-  select.focus();
+addEventListener('load', () => setTimeout(() => {
+  list.focus();
   window.focus();
 }, 0));
 // keep focus
-window.addEventListener('blur', () => window.setTimeout(() => {
-  select.focus();
+addEventListener('blur', () => setTimeout(() => {
+  list.focus();
   window.focus();
 }, 0));
 
@@ -68,17 +111,20 @@ document.addEventListener('click', e => {
     }, () => chrome.runtime.lastError);
   }
   else if (cmd === 'select-all') {
-    if (select.options.length > 1) {
-      for (const o of [...select.options].slice(1)) {
-        o.selected = true;
+    const {options} = list;
+
+    if (options.length > 1) {
+      list.selectedIndex = 2;
+      for (let n = 1; n < options.length; n += 1) {
+        options[n]._internal.option.selected = true;
       }
     }
-    else if (select.options.length) {
-      select.option[0].selected = true;
+    else if (options.length) {
+      list.selectedIndex = 1;
     }
   }
   else if (cmd === 'open-in') {
-    const urls = [...select.options].filter(e => e.selected).map(e => e.value);
+    const urls = list.selectedOptions.map(o => o.parts[2].name);
     if (urls.length === 1) {
       chrome.runtime.sendMessage({
         cmd: 'open-in',
@@ -106,7 +152,7 @@ document.addEventListener('click', e => {
     }
   }
   else if (cmd === 'copy') {
-    const urls = [...select.options].filter(e => e.selected).map(e => e.value);
+    const urls = list.selectedOptions.map(o => o.parts[2].name);
     chrome.runtime.sendMessage({
       cmd: 'copy',
       content: urls.join('\n')
@@ -118,8 +164,6 @@ document.addEventListener('click', e => {
     });
   }
 });
-select.addEventListener('dblclick', e => {
-  if (e.target.tagName === 'OPTION') {
-    document.querySelector('[data-cmd="open-in"]').click();
-  }
+list.addEventListener('dblclick', e => {
+  document.querySelector('[data-cmd="open-in"]').click();
 });

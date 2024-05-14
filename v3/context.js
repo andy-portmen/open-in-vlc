@@ -47,6 +47,13 @@ const context = () => {
     title: 'Convert to MP3',
     contexts: ['action', 'browser_action']
   });
+  // if (/Firefox/.test(navigator.userAgent)) {
+  //   create({
+  //     id: 'open-options',
+  //     title: 'Open Options',
+  //     contexts: ['action', 'browser_action']
+  //   });
+  // }
 };
 context.link = () => chrome.storage.local.get({
   'media-types': TYPES
@@ -126,6 +133,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     chrome.tabs.create({
       url: 'https://webextension.org/listing/hls-downloader.html'
     });
+  }
+  else if (info.menuItemId === 'open-options') {
+    chrome.runtime.openOptionsPage();
   }
   else {
     open({

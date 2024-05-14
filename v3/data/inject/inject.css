@@ -2,7 +2,7 @@ dialog.open-in-vlc {
   padding: 0;
   background-color: #ffecd8;
   border: solid 2px #f7ba79;
-  margin-top: -2px;
+  margin-top: 0;
 }
 dialog.open-in-vlc::backdrop {
   background: rgba(60, 60, 60, 0.4);
