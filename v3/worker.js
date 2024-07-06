@@ -66,7 +66,7 @@ const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
   `
 }, callback));
 
-const open = (tab, tabId) => {
+const open = (tab, tabId, referrer) => {
   let {url} = tab;
   const {title} = tab;
 
@@ -74,6 +74,7 @@ const open = (tab, tabId) => {
     'path': null,
     'send-title-meta': true,
     'one-instance': true,
+    'send-referrer': true,
     'custom-arguments': [],
     'runtime': 'com.add0n.node'
   }, prefs => {
@@ -81,6 +82,10 @@ const open = (tab, tabId) => {
     // macOS does not support this argument
     if (prefs['one-instance'] && is.mac === false) {
       args.push('--one-instance');
+    }
+
+    if (prefs['send-referrer'] && referrer) {
+      args.push('--http-referrer', referrer);
     }
 
     // decode
@@ -101,6 +106,8 @@ const open = (tab, tabId) => {
     }
 
     const native = new Native(tabId, prefs.runtime);
+
+    console.log(args);
 
     if (is.mac) {
       if (prefs['one-instance']) {
@@ -288,7 +295,7 @@ const copy = async (tabId, content) => {
 chrome.action.onClicked.addListener(tab => {
   // VLC can play YouTube. Allow user to send the YouTube link to VLC
   if (tab.url && tab.url.startsWith('https://www.youtube.com/watch?v=')) {
-    open(tab, tab.id);
+    open(tab, tab.id, tab.url);
   }
   else {
     chrome.scripting.executeScript({
@@ -304,7 +311,7 @@ chrome.action.onClicked.addListener(tab => {
           open({
             title: tab.title,
             url: links[0]
-          }, tab.id);
+          }, tab.id, tab.url);
         }
         else if (links.length > 1) {
           await chrome.scripting.insertCSS({
@@ -321,7 +328,7 @@ chrome.action.onClicked.addListener(tab => {
           });
         }
         else if (tab.url) {
-          open(tab, tab.id);
+          open(tab, tab.id, tab.url);
         }
         else {
           notify('Cannot send an internal page to VLC', tab.id);
@@ -360,7 +367,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     open({
       title: sender.tab.title,
       url: request.url
-    }, sender.tab.id);
+    }, sender.tab.id, request.referrer);
   }
   else if (request.cmd === 'combine') {
     chrome.storage.local.get({
@@ -375,7 +382,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
             open({
               title: sender.tab.title,
               url: resp.filename
-            }, sender.tab.id);
+            }, sender.tab.id, request.referrer);
           }
           else {
             chrome.tabs.create({
@@ -389,7 +396,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
           open({
             title: sender.tab.title,
             url
-          }, sender.tab.id);
+          }, sender.tab.id, request.referrer);
         }
       }
     });

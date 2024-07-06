@@ -1,5 +1,6 @@
 'use strict';
 
+const args = new URLSearchParams(location.search);
 const list = document.getElementById('list');
 
 const formatBytes = (bytes, decimals = 0) => {
@@ -128,7 +129,8 @@ document.addEventListener('click', e => {
     if (urls.length === 1) {
       chrome.runtime.sendMessage({
         cmd: 'open-in',
-        url: urls[0]
+        url: urls[0],
+        referrer: args.get('referrer')
       }, () => {
         chrome.runtime.lastError;
         chrome.runtime.sendMessage({
@@ -139,7 +141,8 @@ document.addEventListener('click', e => {
     else if (urls.length > 1) {
       chrome.runtime.sendMessage({
         cmd: 'combine',
-        urls
+        urls,
+        referrer: args.get('referrer')
       }, () => {
         chrome.runtime.lastError;
         chrome.runtime.sendMessage({

@@ -1,4 +1,4 @@
-/* global Native, TYPES, copy, notify */
+/* global TYPES, copy, notify */
 
 const create = o => chrome.contextMenus.create(o, () => chrome.runtime.lastError);
 const context = () => {
@@ -87,6 +87,8 @@ chrome.storage.onChanged.addListener(ps => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
+  console.log(info);
+
   if (info.menuItemId === 'copy-links') {
     chrome.scripting.executeScript({
       target: {
@@ -117,7 +119,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   else if (info.menuItemId === 'page-link') {
     chrome.storage.local.get({
       'runtime': 'com.add0n.node'
-    }, prefs => open(tab, new Native(undefined, prefs.runtime)));
+    }, prefs => open(tab, tab.id, tab.url));
   }
   else if (info.menuItemId === 'audio-joiner') {
     chrome.tabs.create({
@@ -141,6 +143,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     open({
       title: tab.title,
       url: info.srcUrl || info.linkUrl || info.pageUrl
-    }, new Native());
+    }, tab.id, tab.url);
   }
 });
