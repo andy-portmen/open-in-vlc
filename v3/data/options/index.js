@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'use-page-title': true, // for M3U8
     'send-title-meta': true, // as VLC argument
     'send-referrer': true, // as VLC argument
+    'send-user-agent': true, // as VLC argument
     'faqs': true,
     'blacklist': [],
     'media-types': TYPES,
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('use-page-title').checked = prefs['use-page-title'];
     document.getElementById('send-title-meta').checked = prefs['send-title-meta'];
     document.getElementById('send-referrer').checked = prefs['send-referrer'];
+    document.getElementById('send-user-agent').checked = prefs['send-user-agent'];
     document.getElementById('faqs').checked = prefs.faqs;
     document.getElementById('max-number-of-items').value = prefs['max-number-of-items'];
     document.getElementById('blacklist').value = prefs.blacklist.join(', ');
@@ -64,6 +66,7 @@ document.getElementById('save').addEventListener('click', () => {
     'one-instance': document.getElementById('one-instance').checked,
     'use-page-title': document.getElementById('use-page-title').checked,
     'send-referrer': document.getElementById('send-referrer').checked,
+    'send-user-agent': document.getElementById('send-user-agent').checked,
     'send-title-meta': document.getElementById('send-title-meta').checked,
     'blacklist': document.getElementById('blacklist').value.split(/\s*,\s*/).filter((s, i, l) => {
       return s && l.indexOf(s) === i;

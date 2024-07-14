@@ -75,6 +75,7 @@ const open = (tab, tabId, referrer) => {
     'send-title-meta': true,
     'one-instance': true,
     'send-referrer': true,
+    'send-user-agent': true,
     'custom-arguments': [],
     'runtime': 'com.add0n.node'
   }, prefs => {
@@ -87,13 +88,9 @@ const open = (tab, tabId, referrer) => {
     if (prefs['send-referrer'] && referrer) {
       args.push('--http-referrer', referrer);
     }
-
-    // decode
-    if (url.startsWith('https://www.google.') && url.includes('&url=')) {
-      url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
+    if (prefs['send-user-agent']) {
+      args.push('--http-user-agent', navigator.userAgent);
     }
-
-    args.push(url); // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
 
     if (title && prefs['send-title-meta']) {
       // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
@@ -104,6 +101,12 @@ const open = (tab, tabId, referrer) => {
         args.push(`:meta-title=${title}`);
       }
     }
+
+    // decode
+    if (url.startsWith('https://www.google.') && url.includes('&url=')) {
+      url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
+    }
+    args.push(url); // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
 
     const native = new Native(tabId, prefs.runtime);
 
