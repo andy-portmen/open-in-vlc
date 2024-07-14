@@ -107,7 +107,7 @@ const open = (tab, tabId, referrer) => {
 
     const native = new Native(tabId, prefs.runtime);
 
-    console.log(args);
+    console.info('[VLC Arguments]', args);
 
     if (is.mac) {
       if (prefs['one-instance']) {
@@ -255,11 +255,12 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
   }
   // types from UTL
   if (!type) {
-    type = TYPES.find(s => href.includes('.' + s));
+    // Should not match https://s.to/site.webmanifest for instance
+    type = TYPES.find(s => (new RegExp('.' + s + '\\b')).test(href));
   }
 
   if (type) {
-    const size = d.responseHeaders.filter(h => h.name === 'Content-Length' || h.name === 'content-length').map(o => o.value).shift();
+    const size = d.responseHeaders.filter(h => h.name.toLowerCase() === 'content-length').map(o => o.value).shift();
     store(d.tabId, d.url, type, size);
   }
 }, {
