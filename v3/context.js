@@ -87,8 +87,6 @@ chrome.storage.onChanged.addListener(ps => {
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  console.log(info);
-
   if (info.menuItemId === 'copy-links') {
     chrome.scripting.executeScript({
       target: {

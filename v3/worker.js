@@ -32,15 +32,18 @@ const notify = self.notify = (e, tabId) => {
 };
 
 // handle multiple links
-const toM3U8 = (urls, callback, title) => chrome.storage.local.get({
+const toM3U8 = (urls, callback, tab) => chrome.storage.local.get({
   'use-page-title': true,
+  'send-referrer': true,
+  'send-user-agent': true,
   'runtime': 'com.add0n.node'
 }, prefs => chrome.runtime.sendNativeMessage(prefs.runtime, {
   permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
   args: [`#EXTM3U
-` + urls.map(url => {
-    if (title && prefs['use-page-title']) {
-      return `#EXTINF:-1,${title}` + '\n' + url;
+` + (prefs['send-referrer'] && tab.url ? '#EXTVLCOPT:http-referrer=' + tab.url + '\n' : '') +
+    (prefs['send-user-agent'] ? '#EXTVLCOPT:http-user-agent=' + navigator.userAgent + '\n' : '') + urls.map(url => {
+    if (tab.title && prefs['use-page-title']) {
+      return `#EXTINF:-1,${tab.title}` + '\n' + url;
     }
     return url;
   }).join('\n')],
@@ -379,6 +382,8 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     }, prefs => {
       if (prefs.m3u8) {
         toM3U8(request.urls, resp => {
+          console.log(resp);
+
           if (resp && resp.err) {
             notify(resp.err, sender.tab.id);
           }
@@ -393,7 +398,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
               url: '/data/helper/index.html'
             });
           }
-        }, sender.tab.title);
+        }, sender.tab);
       }
       else {
         for (const url of request.urls) {
