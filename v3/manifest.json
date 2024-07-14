@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "permissions": [
     "storage",
     "contextMenus",
