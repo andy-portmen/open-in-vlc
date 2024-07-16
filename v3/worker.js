@@ -1,8 +1,6 @@
 /* global Native, TYPES */
 
-self.importScripts('const.js');
-self.importScripts('native.js');
-self.importScripts('context.js');
+self.importScripts('const.js', 'native.js', 'context.js');
 
 const is = {
   mac: /Mac/i.test(navigator.platform),
@@ -176,7 +174,9 @@ const open = (tab, tabId, referrer) => {
 };
 
 function update(tabId, count = '') {
-  const title = count ? (count + ' media link' + (count === 1 ? '' : 's')) : chrome.runtime.getManifest().action['default_title'];
+  const title = count ?
+    (count + ' media link' + (count === 1 ? '' : 's')) :
+    chrome.runtime.getManifest().action['default_title'];
   chrome.action.setTitle({
     tabId,
     title
@@ -382,8 +382,6 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     }, prefs => {
       if (prefs.m3u8) {
         toM3U8(request.urls, resp => {
-          console.log(resp);
-
           if (resp && resp.err) {
             notify(resp.err, sender.tab.id);
           }
