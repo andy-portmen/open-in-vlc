@@ -97,17 +97,21 @@ const open = (tab, tabId, referrer) => {
     if (url.startsWith('https://www.google.') && url.includes('&url=')) {
       url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
     }
-    args.push(url); // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
 
-    // must be after URL
+    // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
     if (title && prefs['send-title-meta']) {
       // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
       if (is.mac && prefs['one-instance']) {
         args.push(`--meta-title=${title}`);
+        args.push(url);
       }
       else {
+        args.push(url);
         args.push(`:meta-title=${title}`);
       }
+    }
+    else {
+      args.push(url);
     }
 
     const native = new Native(tabId, prefs.runtime);
@@ -143,6 +147,7 @@ const open = (tab, tabId, referrer) => {
             res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe',
             res.env['ProgramFiles'] + '\\VideoLAN\\VLC\\vlc.exe'
           ];
+
           chrome.runtime.sendNativeMessage(prefs.runtime, {
             permissions: ['fs'],
             args: [...paths],
@@ -163,7 +168,16 @@ const open = (tab, tabId, referrer) => {
             else if (r && r.e) {
               console.warn('Unexpected Error', r.e);
             }
-            const path = r && r.d[1] ? paths[1] : (res.env['ProgramFiles(x86)'] ? paths[0] : paths[1]);
+            // VLC is now default to:
+            let path = 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe';
+            if (r) {
+              if (res.env['ProgramFiles'] && r.d[1]) {
+                path = paths[1];
+              }
+              else if (res.env['ProgramFiles(x86)'] && r.d[0]) {
+                path = paths[10];
+              }
+            }
             chrome.storage.local.set({
               path
             }, () => native.exec(path, args));

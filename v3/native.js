@@ -47,7 +47,7 @@ class Native {
   env() {
     return this.#run({
       cmd: 'env'
-    }).catch(e => console.info('native.env', e));
+    }); // do not catch here
   }
   exec(command, args) {
     return this.#run({
