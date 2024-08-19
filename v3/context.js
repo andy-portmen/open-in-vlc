@@ -1,5 +1,6 @@
 /* global TYPES, copy, notify */
 
+const isFF = /Firefox/.test(navigator.userAgent);
 const create = o => chrome.contextMenus.create(o, () => chrome.runtime.lastError);
 const context = () => {
   create({
@@ -20,40 +21,42 @@ const context = () => {
   create({
     id: 'copy-links',
     title: 'Copy Media Links to the Clipboard',
-    contexts: ['action', 'browser_action']
+    contexts: ['action']
   });
   create({
     id: 'page-link',
     title: 'Send Page Link to VLC',
-    contexts: ['action', 'browser_action']
+    contexts: ['action']
   });
-  create({
-    id: 'separator',
-    type: 'separator',
-    contexts: ['action', 'browser_action']
-  });
+  if (isFF === false) {
+    create({
+      id: 'separator',
+      type: 'separator',
+      contexts: ['action']
+    });
+  }
   create({
     id: 'download-hls',
     title: 'Download Live Streams',
-    contexts: ['action', 'browser_action']
+    contexts: ['action']
   });
   create({
     id: 'audio-joiner',
     title: 'Join Audio Files',
-    contexts: ['action', 'browser_action']
+    contexts: ['action']
   });
   create({
     id: 'mp3-converter',
     title: 'Convert to MP3',
-    contexts: ['action', 'browser_action']
+    contexts: ['action']
   });
-  // if (/Firefox/.test(navigator.userAgent)) {
-  //   create({
-  //     id: 'open-options',
-  //     title: 'Open Options',
-  //     contexts: ['action', 'browser_action']
-  //   });
-  // }
+  if (isFF) {
+    create({
+      id: 'open-options',
+      title: 'Open Options',
+      contexts: ['action']
+    });
+  }
 };
 context.link = () => chrome.storage.local.get({
   'media-types': TYPES

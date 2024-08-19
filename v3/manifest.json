@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "permissions": [
     "storage",
     "contextMenus",
@@ -18,7 +18,8 @@
     "downloads"
   ],
   "background": {
-    "service_worker": "worker.js"
+    "service_worker": "worker.js",
+    "scripts": ["const.js", "native.js", "context.js", "worker.js"]
   },
   "homepage_url": "https://webextension.org/listing/open-in-vlc.html",
   "icons": {
@@ -43,5 +44,11 @@
   }],
   "commands": {
     "_execute_action": {}
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{6b954d17-d17c-4a19-8fe6-ee8052a562d6}",
+      "strict_min_version": "115.0"
+    }
   }
 }
