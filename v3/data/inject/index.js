@@ -20,16 +20,10 @@ chrome.runtime.sendMessage({
 }, response => {
   document.getElementById('number').textContent = response.length;
 
-  let active = 0;
-  response = [response[0], ...response.slice(1).sort(([, aO], [, bO]) => {
-    if (bO && bO.type === 'm3u8') {
-      return 1;
-    }
-    if (aO && aO.type === 'm3u8') {
-      return -1;
-    }
-    return aO.date - bO.date;
-  })];
+  const active = {
+    m3u8: -1,
+    media: -1
+  };
 
   response.forEach(([url, o], index) => {
     let ext = o && o.type ? o.type : url.split(/[#?]/)[0].split('.').pop().trim();
@@ -39,11 +33,12 @@ chrome.runtime.sendMessage({
     ext = ext.substr(0, 6);
 
     if (index) {
-      // select media
-      if (active === 0) {
-        if (ext === 'm3u8' || (o && o.size && Number(o.size) > 1024)) {
-          active = index;
-        }
+      // select latest m3u8
+      if (ext === 'm3u8') {
+        active.m3u8 = index;
+      }
+      if (active.media === -1 && o && o.size && Number(o.size) > 1024) {
+        active.media = index;
       }
 
       const size = o.size ? formatBytes(Number(o.size)) : '';
@@ -83,7 +78,16 @@ URL: ${url}`;
     }
   });
 
-  list.selectedIndex = active + 1;
+  // select
+  if (active.m3u8 !== -1) {
+    list.selectedIndex = active.m3u8 + 1;
+  }
+  else if (active.media !== -1) {
+    list.selectedIndex = active.media + 1;
+  }
+  else {
+    list.selectedIndex = 1;
+  }
 });
 addEventListener('load', () => setTimeout(() => {
   list.focus();

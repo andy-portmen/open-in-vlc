@@ -19,7 +19,7 @@
   ],
   "background": {
     "service_worker": "worker.js",
-    "scripts": ["const.js", "native.js", "context.js", "worker.js"]
+    "scripts": ["const.js", "native.js", "context.js", "open.js", "worker.js"]
   },
   "homepage_url": "https://webextension.org/listing/open-in-vlc.html",
   "icons": {

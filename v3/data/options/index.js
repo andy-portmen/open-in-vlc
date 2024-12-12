@@ -6,6 +6,7 @@ const toast = document.getElementById('toast');
 document.addEventListener('DOMContentLoaded', () => {
   chrome.storage.local.get({
     'path': '',
+    'media-player': 'VLC',
     'm3u8': true,
     'one-instance': true,
     'use-page-title': true, // for M3U8
@@ -15,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'faqs': true,
     'blacklist': [],
     'media-types': TYPES,
-    'max-number-of-items': 200,
+    'max-number-of-items': 100,
     'user-argument-string': '',
     'runtime': 'com.add0n.node'
   }, prefs => {
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('media-types').value = prefs['media-types'].join(', ');
     document.getElementById('user-argument-string').value = prefs['user-argument-string'];
     document.getElementById('runtime').value = prefs['runtime'];
+    document.getElementById('media-player').value = prefs['media-player'];
   });
 });
 document.getElementById('save').addEventListener('click', () => {
@@ -61,6 +63,7 @@ document.getElementById('save').addEventListener('click', () => {
   chrome.storage.local.set({
     'runtime': document.getElementById('runtime').value,
     'path': document.getElementById('path').value,
+    'media-player': document.getElementById('media-player').value,
     'm3u8': document.getElementById('m3u8').checked,
     'faqs': document.getElementById('faqs').checked,
     'one-instance': document.getElementById('one-instance').checked,
@@ -87,7 +90,7 @@ document.getElementById('save').addEventListener('click', () => {
 document.getElementById('reset').addEventListener('click', e => {
   if (e.detail === 1) {
     toast.textContent = 'Double-click to reset!';
-    window.setTimeout(() => toast.textContent = '', 750);
+    setTimeout(() => toast.textContent = '', 750);
   }
   else {
     localStorage.clear();
@@ -119,3 +122,8 @@ for (const a of [...document.querySelectorAll('[data-href]')]) {
     a.href = chrome.runtime.getManifest().homepage_url + '#' + a.dataset.href;
   }
 }
+
+// player
+document.getElementById('media-player').onchange = () => {
+  document.getElementById('path').value = '';
+};

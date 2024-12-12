@@ -3,6 +3,11 @@
 const isFF = /Firefox/.test(navigator.userAgent);
 const create = o => chrome.contextMenus.create(o, () => chrome.runtime.lastError);
 const context = () => {
+  if (context.done) {
+    return;
+  }
+  context.done = true;
+
   create({
     id: 'player',
     title: 'Open in VLC',
@@ -95,18 +100,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       target: {
         tabId: tab.id
       },
-      func: () => {
-        // sorting
-        return Object.entries(self.links || {}).sort(([, aO], [, bO]) => {
-          if (bO && bO.type === 'm3u8') {
-            return 1;
-          }
-          if (aO && aO.type === 'm3u8') {
-            return -1;
-          }
-          return aO.date - bO.date;
-        }).map(a => a[0]);
-      }
+      func: () => self.links ? [...self.links.keys()] : []
     }).then(r => {
       const links = r[0]?.result || [];
       if (links.length) {

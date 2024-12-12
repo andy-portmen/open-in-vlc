@@ -1,13 +1,8 @@
-/* global Native, TYPES */
+/* global TYPES */
 
 if (typeof importScripts !== 'undefined') {
-  self.importScripts('const.js', 'native.js', 'context.js');
+  self.importScripts('const.js', 'native.js', 'context.js', 'open.js');
 }
-
-const is = {
-  mac: /Mac/i.test(navigator.platform),
-  linux: /Linux/i.test(navigator.platform)
-};
 
 const notify = self.notify = (e, tabId) => {
   chrome.action.setTitle({
@@ -69,127 +64,6 @@ const toM3U8 = (urls, callback, tab) => chrome.storage.local.get({
   `
 }, callback));
 
-const open = (tab, tabId, referrer) => {
-  let {url} = tab;
-  const {title} = tab;
-
-  chrome.storage.local.get({
-    'path': null,
-    'send-title-meta': true,
-    'one-instance': true,
-    'send-referrer': true,
-    'send-user-agent': true,
-    'custom-arguments': [],
-    'runtime': 'com.add0n.node'
-  }, prefs => {
-    const args = prefs['custom-arguments'];
-    // macOS does not support this argument
-    if (prefs['one-instance'] && is.mac === false) {
-      args.push('--one-instance');
-    }
-
-    if (prefs['send-referrer'] && referrer) {
-      args.push('--http-referrer', referrer);
-    }
-    if (prefs['send-user-agent']) {
-      args.push('--http-user-agent', navigator.userAgent);
-    }
-
-    // decode
-    if (url.startsWith('https://www.google.') && url.includes('&url=')) {
-      url = decodeURIComponent(url.split('&url=')[1].split('&')[0]);
-    }
-
-    // meta title must be appended to this (https://code.videolan.org/videolan/vlc/-/issues/22560)
-    if (title && prefs['send-title-meta']) {
-      // since we are using "open -a VLC URL --args" we can not send meta data appended after the URL
-      if (is.mac && prefs['one-instance']) {
-        args.push(`--meta-title=${title}`);
-        args.push(url);
-      }
-      else {
-        args.push(url);
-        args.push(`:meta-title=${title}`);
-      }
-    }
-    else {
-      args.push(url);
-    }
-
-    const native = new Native(tabId, prefs.runtime);
-
-    console.info('[VLC Arguments]', args);
-
-    if (is.mac) {
-      if (prefs['one-instance']) {
-        const href = url;
-        args.splice(args.lastIndexOf(url), 1);
-
-        const mArgs = ['-a', 'VLC', href];
-        if (args.length > 0) {
-          mArgs.push('--args', ...args);
-        }
-
-        native.exec('open', mArgs);
-      }
-      else {
-        native.exec('/Applications/VLC.app/Contents/MacOS/VLC', args);
-      }
-    }
-    else {
-      if (is.linux) {
-        native.exec(prefs.path || 'vlc', args);
-      }
-      else if (prefs.path) {
-        native.exec(prefs.path, args);
-      }
-      else { // Windows
-        native.env().then(res => {
-          const paths = [
-            res.env['ProgramFiles(x86)'] + '\\VideoLAN\\VLC\\vlc.exe',
-            res.env['ProgramFiles'] + '\\VideoLAN\\VLC\\vlc.exe'
-          ];
-
-          chrome.runtime.sendNativeMessage(prefs.runtime, {
-            permissions: ['fs'],
-            args: [...paths],
-            script: `
-              const fs = require('fs');
-              const exist = path => new Promise(resolve => fs.access(path, fs.F_OK, e => {
-                resolve(e ? false : true);
-              }));
-              Promise.all(args.map(exist)).then(d => {
-                push({d});
-                done();
-              }).catch(e => push({e: e.message}));
-            `
-          }, r => {
-            if (!r) {
-              console.warn('Native Client Exited', chrome.runtime.lastError);
-            }
-            else if (r && r.e) {
-              console.warn('Unexpected Error', r.e);
-            }
-            // VLC is now default to:
-            let path = 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe';
-            if (r) {
-              if (res.env['ProgramFiles'] && r.d[1]) {
-                path = paths[1];
-              }
-              else if (res.env['ProgramFiles(x86)'] && r.d[0]) {
-                path = paths[10];
-              }
-            }
-            chrome.storage.local.set({
-              path
-            }, () => native.exec(path, args));
-          });
-        });
-      }
-    }
-  });
-};
-
 function update(tabId, count = '') {
   const title = count ?
     (count + ' media link' + (count === 1 ? '' : 's')) :
@@ -213,51 +87,45 @@ function update(tabId, count = '') {
   });
 }
 
-const store = (tabId, href, type, size = '') => {
-  const date = Date.now();
-  chrome.storage.local.get({
-    'blacklist': [],
-    'max-number-of-items': 200
-  }, ps => {
-    if (ps.blacklist.length && new RegExp(ps.blacklist.join('|')).test(href)) {
-      return;
-    }
-    chrome.scripting.executeScript({
-      target: {
-        tabId: tabId
-      },
-      func: (max, href, type, size, date) => {
-        self.links = self.links || {};
-        self.links[href] = {
-          type,
-          size,
-          date
-        };
-        const c = Object.keys(self.links).length;
-        if (c > max) {
-          const dates = Object.values(self.links).map(o => o.date);
-          dates.sort();
-
-          const rd = dates.slice(0, c - max);
-
-          for (const [href, o] of Object.entries(self.links)) {
-            if (rd.includes(o.date)) {
-              delete self.links[href];
-            }
-          }
-        }
-
-        return Object.keys(self.links).length;
-      },
-      args: [ps['max-number-of-items'], href, type, size, date]
-    }).then(r => {
-      update(tabId, r ? r[0]?.result : '');
+const store = async (d, type, size = '') => {
+  if (!store.prefs) {
+    store.prefs = await chrome.storage.local.get({
+      'blacklist': [],
+      'max-number-of-items': 100
     });
+    store.check = store.prefs.blacklist.length ? new RegExp(store.prefs.blacklist.join('|')) : false;
+  }
+
+  if (store.check && store.check.test(d.href)) {
+    return;
+  }
+
+  chrome.scripting.executeScript({
+    target: {
+      tabId: d.tabId
+    },
+    func: (max, href, type, size) => {
+      self.links = self.links || new Map();
+      self.links.set(href, {
+        type,
+        size
+      });
+      // cleanup
+      if (self.links.size > max) {
+        const firstKey = self.links.keys().next().value;
+        self.links.delete(firstKey);
+      }
+
+      return self.links.size;
+    },
+    args: [store.prefs['max-number-of-items'], d.url, type, size]
+  }).then(r => {
+    update(d.tabId, r ? r[0]?.result : '');
   });
 };
 
 chrome.webRequest.onHeadersReceived.addListener(d => {
-  if (d.type === 'main_frame' || d.frameType === '"outermost_frame"') {
+  if (d.type === 'main_frame' || d.frameType === 'outermost_frame') {
     if (d.url.startsWith('https://www.youtube.com/watch?v=')) {
       update(d.tabId, 1);
     }
@@ -268,23 +136,33 @@ chrome.webRequest.onHeadersReceived.addListener(d => {
     return;
   }
 
-  let type = d.responseHeaders.filter(h => h.name === 'Content-Type' || h.name === 'content-type')
-    .filter(h => h.value.startsWith('video') || h.value.startsWith('audio'))
-    .map(h => h.value.split('/')[1].split(';')[0]).shift();
   const href = d.url.toLowerCase();
-  // forced stream detection
+
+  let type;
   if (href.includes('.m3u8')) {
     type = 'm3u8';
   }
+  else {
+    const header = href.includes('.m3u8') ? 'm3u8' : d.responseHeaders.find(h => {
+      return (h.name === 'Content-Type' || h.name === 'content-type') &&
+        (h.value.startsWith('video') || h.value.startsWith('audio'));
+    });
+    if (header) {
+      type = header.value.split('/')[1].split(';')[0];
+    }
+  }
+
   // types from UTL
   if (!type) {
-    // Should not match https://s.to/site.webmanifest for instance
-    type = TYPES.find(s => (new RegExp('.' + s + '\\b')).test(href));
+    if (TYPES.regex.test(href)) {
+      // Should not match https://s.to/site.webmanifest for instance
+      type = TYPES.find(s => (new RegExp('.' + s + '\\b')).test(href));
+    }
   }
 
   if (type) {
     const size = d.responseHeaders.filter(h => h.name.toLowerCase() === 'content-length').map(o => o.value).shift();
-    store(d.tabId, d.url, type, size);
+    store(d, type, size);
   }
 }, {
   urls: ['*://*/*'],
@@ -326,7 +204,7 @@ chrome.action.onClicked.addListener(tab => {
       target: {
         tabId: tab.id
       },
-      func: () => Object.keys(self.links || {})
+      func: () => self.links ? [...self.links.keys()] : []
     }).then(async r => {
       if (r) {
         const links = r[0]?.result || [];
@@ -368,9 +246,9 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
       target: {
         tabId: sender.tab.id
       },
-      func: () => self.links || {}
+      func: () => self.links ? [...self.links.entries()] : []
     }).then(r => {
-      response([[sender.tab.url], ...Object.entries(r[0]?.result || {})]);
+      response([[sender.tab.url], ...(r[0].result || [])]);
     });
     return true;
   }
@@ -428,9 +306,15 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
 });
 
 {
-  const once = () => chrome.action.setBadgeBackgroundColor({
-    color: '#e17960'
-  });
+  const once = () => {
+    if (once.done) {
+      return;
+    }
+    once.done = true;
+    chrome.action.setBadgeBackgroundColor({
+      color: '#e17960'
+    });
+  };
   chrome.runtime.onInstalled.addListener(once);
   chrome.runtime.onStartup.addListener(once);
 }

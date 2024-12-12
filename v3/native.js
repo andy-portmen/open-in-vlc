@@ -50,10 +50,20 @@ class Native {
     }); // do not catch here
   }
   exec(command, args) {
+    const properties = {};
+    // supports quotations on argument list
+    if (args.some(a => a.includes('"'))) {
+      properties.shell = true;
+      if (command.includes(' ') && command.startsWith('"') === false) {
+        command = `"${command}"`;
+      }
+    }
+
     return this.#run({
       cmd: 'exec',
       command,
-      arguments: args
+      arguments: args,
+      properties
     }).catch(e => console.info('native.exec', e));
   }
 }

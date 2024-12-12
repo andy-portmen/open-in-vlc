@@ -8,3 +8,5 @@ const TYPES = [
   // archive
   'zip', 'rar'
 ];
+
+TYPES.regex = new RegExp(`\\.(${TYPES.join('|')})(\\?.*)?$`, 'i');
