@@ -97,8 +97,6 @@ const open = async (tab, tabId, referrer) => {
 
   const native = new Native(tabId, prefs.runtime);
 
-  console.info('[Arguments]', args);
-
   const executable = await open.executable(prefs);
 
   if (is.mac) {
@@ -174,7 +172,8 @@ const open = async (tab, tabId, referrer) => {
         }
       }
       await chrome.storage.local.set({
-        path
+        path,
+        ['path-' + prefs['media-player']]: path
       });
 
       native.exec(path, [
@@ -188,12 +187,23 @@ const open = async (tab, tabId, referrer) => {
 
 open.executable = prefs => {
   if (is.mac) {
+    if (prefs['media-player'] === 'QMP') {
+      return {
+        name: 'QMPlay2',
+        path: '/Applications/VLC.app/Contents/MacOS/QMPlay2'
+      };
+    }
     return {
       name: 'VLC',
       path: '/Applications/VLC.app/Contents/MacOS/VLC'
     };
   }
   else if (is.linux) {
+    if (prefs['media-player'] === 'QMP') {
+      return {
+        name: 'QMPlay2'
+      };
+    }
     return {
       name: 'vlc'
     };

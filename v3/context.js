@@ -33,6 +33,39 @@ const context = () => {
     title: 'Send Page Link to VLC',
     contexts: ['action']
   });
+  create({
+    id: 'media-player',
+    title: 'Change Media Player',
+    contexts: ['action']
+  });
+  chrome.storage.local.get({
+    'media-player': 'VLC'
+  }, prefs => {
+    create({
+      id: 'media-player-VLC',
+      title: 'VLC (VideoLAN)',
+      contexts: ['action'],
+      parentId: 'media-player',
+      type: 'radio',
+      checked: prefs['media-player'] === 'VLC'
+    });
+    create({
+      id: 'media-player-POT',
+      title: 'PotPlayer (Windows Only)',
+      contexts: ['action'],
+      parentId: 'media-player',
+      type: 'radio',
+      checked: prefs['media-player'] === 'POT'
+    });
+    create({
+      id: 'media-player-QMP',
+      title: 'QMPlay2',
+      contexts: ['action'],
+      parentId: 'media-player',
+      type: 'radio',
+      checked: prefs['media-player'] === 'QMP'
+    });
+  });
   if (isFF === false) {
     create({
       id: 'separator',
@@ -43,11 +76,6 @@ const context = () => {
   create({
     id: 'download-hls',
     title: 'Download Live Streams',
-    contexts: ['action']
-  });
-  create({
-    id: 'audio-joiner',
-    title: 'Join Audio Files',
     contexts: ['action']
   });
   create({
@@ -116,11 +144,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       'runtime': 'com.add0n.node'
     }, prefs => open(tab, tab.id, tab.url));
   }
-  else if (info.menuItemId === 'audio-joiner') {
-    chrome.tabs.create({
-      url: 'https://webbrowsertools.com/audio-joiner/'
-    });
-  }
   else if (info.menuItemId === 'mp3-converter') {
     chrome.tabs.create({
       url: 'https://webbrowsertools.com/convert-to-mp3/'
@@ -133,6 +156,18 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
   else if (info.menuItemId === 'open-options') {
     chrome.runtime.openOptionsPage();
+  }
+  else if (info.menuItemId.startsWith('media-player-')) {
+    const id = info.menuItemId.replace('media-player-', '');
+    const key = 'path-' + id;
+    chrome.storage.local.get({
+      [key]: ''
+    }, prefs => {
+      chrome.storage.local.set({
+        'media-player': id,
+        'path': prefs[key]
+      });
+    });
   }
   else {
     open({

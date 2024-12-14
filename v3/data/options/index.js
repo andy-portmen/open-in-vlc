@@ -60,7 +60,7 @@ document.getElementById('save').addEventListener('click', () => {
     }
   }
 
-  chrome.storage.local.set({
+  const prefs = {
     'runtime': document.getElementById('runtime').value,
     'path': document.getElementById('path').value,
     'media-player': document.getElementById('media-player').value,
@@ -80,7 +80,13 @@ document.getElementById('save').addEventListener('click', () => {
     'max-number-of-items': Math.max(5, document.getElementById('max-number-of-items').valueAsNumber) || 200,
     'custom-arguments': customArgs,
     'user-argument-string': user
-  }, () => {
+  };
+  // store media-player specific path
+  if (prefs.path) {
+    prefs['path-' + prefs['media-player']] = prefs.path;
+  }
+
+  chrome.storage.local.set(prefs, () => {
     toast.textContent = 'Options saved.';
     setTimeout(() => toast.textContent = '', 750);
   });
@@ -123,7 +129,14 @@ for (const a of [...document.querySelectorAll('[data-href]')]) {
   }
 }
 
-// player
-document.getElementById('media-player').onchange = () => {
+// change of player
+document.getElementById('media-player').onchange = async e => {
   document.getElementById('path').value = '';
+  const key = 'path-' + e.target.value;
+  const prefs = await chrome.storage.local.get({
+    [key]: ''
+  });
+  if (prefs[key]) {
+    document.getElementById('path').value = prefs[key];
+  }
 };

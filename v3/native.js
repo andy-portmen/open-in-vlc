@@ -5,6 +5,10 @@ class Native {
     this.runtime = runtime;
   }
   #run(command) {
+    if (command.cmd === 'exec') {
+      console.info('[Executable]', command.command, '[Arguments]', command.arguments);
+    }
+
     return new Promise((resolve, reject) => {
       const channel = chrome.runtime.connectNative(this.runtime);
       channel.onDisconnect.addListener(() => {
