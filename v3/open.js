@@ -187,6 +187,12 @@ const open = async (tab, tabId, referrer) => {
 
 open.executable = prefs => {
   if (is.mac) {
+    if (prefs.path) {
+      return {
+        name: prefs.path,
+        path: '/Applications/VLC.app/Contents/MacOS/' + prefs.path
+      };
+    }
     if (prefs['media-player'] === 'QMP') {
       return {
         name: 'QMPlay2',
