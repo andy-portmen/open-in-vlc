@@ -96,7 +96,7 @@ const store = async (d, type, size = '') => {
     store.check = store.prefs.blacklist.length ? new RegExp(store.prefs.blacklist.join('|')) : false;
   }
 
-  if (store.check && store.check.test(d.href)) {
+  if (store.check && store.check.test(d.url)) {
     return;
   }
 
