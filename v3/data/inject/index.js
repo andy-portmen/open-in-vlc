@@ -1,6 +1,6 @@
 'use strict';
 
-const args = new URLSearchParams(location.search);
+const args = {};
 const list = document.getElementById('list');
 
 const formatBytes = (bytes, decimals = 0) => {
@@ -15,17 +15,17 @@ const formatBytes = (bytes, decimals = 0) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 };
 
-chrome.runtime.sendMessage({
-  cmd: 'get-links'
-}, response => {
-  document.getElementById('number').textContent = response.length;
+onmessage = e => {
+  args.referrer = e.data.referrer;
+
+  document.getElementById('number').textContent = e.data.map.length;
 
   const active = {
     m3u8: -1,
     media: -1
   };
 
-  response.forEach(([url, o], index) => {
+  e.data.map.forEach(([url, o], index) => {
     let ext = o && o.type ? o.type : url.split(/[#?]/)[0].split('.').pop().trim();
     if (ext.includes('/')) {
       ext = '';
@@ -88,7 +88,8 @@ URL: ${url}`;
   else {
     list.selectedIndex = 1;
   }
-});
+};
+
 addEventListener('load', () => setTimeout(() => {
   list.focus();
   window.focus();
@@ -134,7 +135,7 @@ document.addEventListener('click', e => {
       chrome.runtime.sendMessage({
         cmd: 'open-in',
         url: urls[0],
-        referrer: args.get('referrer')
+        referrer: args.referrer
       }, () => {
         chrome.runtime.lastError;
         chrome.runtime.sendMessage({
@@ -146,7 +147,7 @@ document.addEventListener('click', e => {
       chrome.runtime.sendMessage({
         cmd: 'combine',
         urls,
-        referrer: args.get('referrer')
+        referrer: args.referrer
       }, () => {
         chrome.runtime.lastError;
         chrome.runtime.sendMessage({

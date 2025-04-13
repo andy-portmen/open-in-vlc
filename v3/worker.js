@@ -1,7 +1,7 @@
-/* global TYPES */
+/* global TYPES, extract */
 
 if (typeof importScripts !== 'undefined') {
-  self.importScripts('const.js', 'native.js', 'context.js', 'open.js');
+  self.importScripts('const.js', 'native.js', 'context.js', 'open.js', 'extract.js');
 }
 
 const notify = self.notify = (e, tabId) => {
@@ -194,65 +194,79 @@ const copy = async (tabId, content) => {
 };
 
 // actions
-chrome.action.onClicked.addListener(tab => {
+chrome.action.onClicked.addListener(async tab => {
   // VLC can play YouTube. Allow user to send the YouTube link to VLC
   if (tab.url && tab.url.startsWith('https://www.youtube.com/watch?v=')) {
     open(tab, tab.id, tab.url);
   }
   else {
-    chrome.scripting.executeScript({
-      target: {
-        tabId: tab.id
-      },
-      func: () => self.links ? [...self.links.keys()] : []
-    }).then(async r => {
-      if (r) {
-        const links = r[0]?.result || [];
+    const target = {
+      tabId: tab.id
+    };
 
-        if (links.length === 1) {
+    try {
+      const map = new Map();
+
+      // check page's media players (from Live Stream Downloader extension)
+      for (const o of await extract.performance(tab.id)) {
+        map.set(o.url, {});
+      }
+      for (const o of await extract.player(tab.id)) {
+        map.set(o.url, {});
+      }
+      // storage
+      const r = await chrome.scripting.executeScript({
+        target,
+        func: () => self.links ? [...self.links.entries()] : []
+      });
+      if (r && r[0]?.result) {
+        for (const [url, o] of r[0].result) {
+          map.set(url, o);
+        }
+      }
+
+      if (map.size) {
+        if (map.size === 1) {
           open({
             title: tab.title,
-            url: links[0]
+            url: map.entries().next().value[0]
           }, tab.id, tab.url);
         }
-        else if (links.length > 1) {
+        else {
+          const args = [[
+            [tab.url], // first entry must be the page address
+            ...map.entries()
+          ]];
+          await chrome.scripting.executeScript({
+            target,
+            func: map => self.map = map,
+            args
+          });
           await chrome.scripting.insertCSS({
-            target: {
-              tabId: tab.id
-            },
+            target,
             files: ['/data/inject/inject.css']
           });
           chrome.scripting.executeScript({
-            target: {
-              tabId: tab.id
-            },
+            target,
             files: ['/data/inject/inject.js']
           });
         }
-        else if (tab.url) {
-          open(tab, tab.id, tab.url);
-        }
-        else {
-          notify('Cannot send an internal page to VLC', tab.id);
-        }
       }
-    }).catch(e => notify(e, tab.id));
+      else if (tab.url) {
+        open(tab, tab.id, tab.url);
+      }
+      else {
+        notify('Cannot send an internal page to VLC', tab.id);
+      }
+    }
+    catch (e) {
+      notify(e, tab.id);
+    }
   }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, response) => {
-  if (request.cmd === 'get-links') {
-    chrome.scripting.executeScript({
-      target: {
-        tabId: sender.tab.id
-      },
-      func: () => self.links ? [...self.links.entries()] : []
-    }).then(r => {
-      response([[sender.tab.url], ...(r[0].result || [])]);
-    });
-    return true;
-  }
-  else if (request.cmd === 'copy') {
+  if (request.cmd === 'copy') {
     copy(sender.tab.id, request.content);
   }
   else if (request.cmd === 'close-me') {

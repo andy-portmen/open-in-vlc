@@ -7,11 +7,15 @@
   dialog.classList.add('open-in-vlc');
 
   const iframe = document.createElement('iframe');
-  const args = new URLSearchParams(location.search);
-  args.set('referrer', location.href);
-  iframe.src = chrome.runtime.getURL('/data/inject/index.html?' + args.toString());
+  iframe.onload = () => {
+    iframe.contentWindow.postMessage({
+      map: self.map,
+      referrer: location.href
+    }, '*');
+    delete self.map;
+  };
+  iframe.src = chrome.runtime.getURL('/data/inject/index.html');
   dialog.append(iframe);
   document.body.append(dialog);
   dialog.showModal();
 }
-
