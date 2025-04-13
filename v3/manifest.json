@@ -3,7 +3,7 @@
   "name": "Open in VLC™ media player",
   "description": "__MSG_description__",
   "default_locale": "en",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "permissions": [
     "storage",
     "contextMenus",
@@ -19,7 +19,7 @@
   ],
   "background": {
     "service_worker": "worker.js",
-    "scripts": ["const.js", "native.js", "context.js", "open.js", "worker.js"]
+    "scripts": ["const.js", "native.js", "context.js", "open.js", "extract.js", "worker.js"]
   },
   "homepage_url": "https://webextension.org/listing/open-in-vlc.html",
   "icons": {
