@@ -94,6 +94,53 @@ const open = async (tab, tabId, referrer) => {
       }
     }
   }
+  // replace page related queries
+  const queries = [];
+  for (const type of ['pre', 'post']) {
+    args[type].forEach((arg, position) => {
+      const regex = /\[\[([\s\S]*?)\]\]/g;
+      let match;
+      while ((match = regex.exec(arg)) !== null) {
+        const query = match[1];
+        queries.push({query, position, type});
+      }
+    });
+  }
+  // try to resolve the query from page
+  if (queries.length) {
+    const r = await chrome.scripting.executeScript({
+      target: {
+        tabId
+      },
+      func: queries => {
+        for (const o of queries) {
+          try {
+            const [query, selector] = o.query.split('@');
+            if (selector) {
+              o.result = document.querySelector(query).getAttribute(selector);
+            }
+            else {
+              o.result = document.querySelector(query).textContent;
+            }
+          }
+          catch (e) {
+            o.result = 'NA';
+            console.error('[Error]', o.query, e.message);
+          }
+        }
+        return queries;
+      },
+      args: [queries]
+    }).catch(e => {
+      console.error(e);
+    });
+    if (r && r[0].result) {
+      for (const o of r[0].result) {
+        const v = args[o.type].at(o.position).replaceAll('[[' + o.query + ']]', o.result);
+        args[o.type][o.position] = v;
+      }
+    }
+  }
 
   const native = new Native(tabId, prefs.runtime);
 
