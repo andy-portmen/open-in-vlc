@@ -27,11 +27,19 @@ const open = async (tab, tabId, referrer) => {
   };
 
   if (prefs['custom-arguments'].length) {
-    if (prefs['media-player'] === 'POT') {
-      args.post.push(...prefs['custom-arguments']);
-    }
-    else {
-      args.pre.push(...prefs['custom-arguments']);
+    for (const c of prefs['custom-arguments']) {
+      if (c.startsWith('pre|')) {
+        args.pre.unshift(c.slice(4));
+      }
+      else if (c.startsWith('post|')) {
+        args.post.push(c.slice(5));
+      }
+      else if (prefs['media-player'] === 'POT') {
+        args.post.push(c);
+      }
+      else {
+        args.pre.push(c);
+      }
     }
   }
 
@@ -145,7 +153,6 @@ const open = async (tab, tabId, referrer) => {
   const native = new Native(tabId, prefs.runtime);
 
   const executable = await open.executable(prefs);
-
   if (is.mac) {
     if (prefs['one-instance']) {
       const href = url;
