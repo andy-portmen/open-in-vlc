@@ -13,6 +13,10 @@ const notify = self.notify = (e, tabId) => {
     tabId,
     color: 'red'
   });
+  chrome.action?.setBadgeTextColor?.({
+    tabId,
+    color: 'white'
+  });
   chrome.action.setBadgeText({
     tabId,
     text: 'E'
@@ -27,42 +31,45 @@ const notify = self.notify = (e, tabId) => {
 };
 
 // handle multiple links
-const toM3U8 = (urls, callback, tab) => chrome.storage.local.get({
-  'use-page-title': true,
-  'send-referrer': true,
-  'send-user-agent': true,
-  'runtime': 'com.add0n.node'
-}, prefs => chrome.runtime.sendNativeMessage(prefs.runtime, {
-  permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
-  args: [`#EXTM3U
-` + (prefs['send-referrer'] && tab.url ? '#EXTVLCOPT:http-referrer=' + tab.url + '\n' : '') +
-    (prefs['send-user-agent'] ? '#EXTVLCOPT:http-user-agent=' + navigator.userAgent + '\n' : '') + urls.map(url => {
-    if (tab.title && prefs['use-page-title']) {
-      return `#EXTINF:-1,${tab.title}` + '\n' + url;
-    }
-    return url;
-  }).join('\n')],
-  script: `
-    const path = require('path');
+const toM3U8 = async (urls, tab) => {
+  const prefs = await chrome.storage.local.get({
+    'use-page-title': true,
+    'send-referrer': true,
+    'send-user-agent': true,
+    'runtime': 'com.add0n.node'
+  });
+  return chrome.runtime.sendNativeMessage(prefs.runtime, {
+    permissions: ['crypto', 'fs', 'os', 'path', 'child_process'],
+    args: [`#EXTM3U
+  ` + (prefs['send-referrer'] && tab.url ? '#EXTVLCOPT:http-referrer=' + tab.url + '\n' : '') +
+      (prefs['send-user-agent'] ? '#EXTVLCOPT:http-user-agent=' + navigator.userAgent + '\n' : '') + urls.map(url => {
+      if (tab.title && prefs['use-page-title']) {
+        return `#EXTINF:-1,${tab.title}` + '\n' + url;
+      }
+      return url;
+    }).join('\n')],
+    script: `
+      const path = require('path');
 
-    const filename = path.join(
-      require('os').tmpdir(),
-      'media-' + require('crypto').randomBytes(4).readUInt32LE(0) + '.m3u8'
-    );
-    require('fs').writeFile(filename, args[0], err => {
-      if (err) {
+      const filename = path.join(
+        require('os').tmpdir(),
+        'media-' + require('crypto').randomBytes(4).readUInt32LE(0) + '.m3u8'
+      );
+      require('fs').writeFile(filename, args[0], err => {
+        if (err) {
+          push({
+            err: err.message || err
+          });
+          done();
+        }
         push({
-          err: err.message || err
+          filename
         });
         done();
-      }
-      push({
-        filename
       });
-      done();
-    });
-  `
-}, callback));
+    `
+  });
+};
 
 function update(tabId, count = '') {
   const title = count ?
@@ -175,20 +182,19 @@ const copy = async (tabId, content) => {
   }
   catch (e) {
     const win = await chrome.windows.getCurrent();
-    chrome.storage.local.get({
+    const prefs = await chrome.storage.local.get({
       width: 400,
       height: 300,
       left: win.left + Math.round((win.width - 400) / 2),
       top: win.top + Math.round((win.height - 300) / 2)
-    }, prefs => {
-      chrome.windows.create({
-        url: '/data/copy/index.html?content=' + encodeURIComponent(content),
-        width: prefs.width,
-        height: prefs.height,
-        left: prefs.left,
-        top: prefs.top,
-        type: 'popup'
-      });
+    });
+    chrome.windows.create({
+      url: '/data/copy/index.html?content=' + encodeURIComponent(content),
+      width: prefs.width,
+      height: prefs.height,
+      left: prefs.left,
+      top: prefs.top,
+      type: 'popup'
     });
   }
 };
@@ -290,7 +296,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
       'm3u8': true
     }, prefs => {
       if (prefs.m3u8) {
-        toM3U8(request.urls, resp => {
+        toM3U8(request.urls, sender.tab).then(resp => {
           if (resp && resp.err) {
             notify(resp.err, sender.tab.id);
           }
@@ -305,7 +311,10 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
               url: '/data/helper/index.html'
             });
           }
-        }, sender.tab);
+        }).catch(e => {
+          console.error(e);
+          notify(e.message, sender.tab.id);
+        });
       }
       else {
         for (const url of request.urls) {
@@ -327,6 +336,9 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     once.done = true;
     chrome.action.setBadgeBackgroundColor({
       color: '#e17960'
+    });
+    chrome.action?.setBadgeTextColor?.({
+      color: 'white'
     });
   };
   chrome.runtime.onInstalled.addListener(once);

@@ -1,34 +1,39 @@
 :root {
-  --clc: #4d5156;
-  --bg-pink: #ffeee2;
+  --clr: light-dark(#4d5156, #bdc6cf);
+  --bg: light-dark(#fff, #202124);
+  --link: light-dark(#0374ff, #9ac8ff);
+  --bg-alt: light-dark(#ffeee2, #3a3a3a);
+  --error: light-dark(#ff3131, #ff9696);
+
+  color-scheme: light dark;
 }
 
 body {
-  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   font-size: 14px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   line-height: 1.5em;
-  background-color: #fff;
   color: var(--clc);
-  margin: 0;
+  background-color: var(--bg);
   width: min(70rem, 100vw);
   margin-inline: auto;
 }
 h1 {
   color: var(--clc);
-  background-color: var(--bg-pink);
+  background-color: var(--bg-alt);
   padding: 20px 10px;
   margin: 0;
   font-size: 20px;
   font-weight: normal;
+  text-align: center;
 }
 p {
   padding: 10px;
-  margin: 0 0 10px 0;
+  margin: 0 0 10px;
 }
 input {
   padding: 20px;
   color: var(--clc);
-  background-color: var(--bg-pink);
+  background-color: var(--bg-alt);
   border: none;
   font-size: 120%;
   outline: none;
@@ -39,7 +44,7 @@ input:active {
 }
 .note {
   color: var(--clc);
-  background-color: var(--bg-pink);
+  background-color: var(--bg-alt);
   font-size: 90%;
 }
 .flex {
@@ -60,7 +65,7 @@ body[data-step="1"] .step1 {
 }
 a,
 a:visited {
-  color: #06c;
+  color: var(--link);
   text-decoration: none;
 }
 li {
@@ -73,7 +78,7 @@ select {
   padding-left: 10px;
 }
 .guide ul {
-  margin: 5px;
+  margin: 5px 0;
 }
 
 body[data-installed=true] #steps > li {
@@ -82,7 +87,7 @@ body[data-installed=true] #steps > li {
 }
 body[data-installed=true] #alternative {
   font-weight: bold;
-  color: red;
+  color: var(--error);
 }
 body[data-installed=true] .canhide {
   opacity: 0.5;

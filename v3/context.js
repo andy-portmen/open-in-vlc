@@ -2,12 +2,7 @@
 
 const isFF = /Firefox/.test(navigator.userAgent);
 const create = o => chrome.contextMenus.create(o, () => chrome.runtime.lastError);
-const context = () => {
-  if (context.done) {
-    return;
-  }
-  context.done = true;
-
+const context = async () => {
   create({
     id: 'player',
     title: 'Open in VLC',
@@ -38,33 +33,32 @@ const context = () => {
     title: 'Change Media Player',
     contexts: ['action']
   });
-  chrome.storage.local.get({
+  const prefs = await chrome.storage.local.get({
     'media-player': 'VLC'
-  }, prefs => {
-    create({
-      id: 'media-player-VLC',
-      title: 'VLC (VideoLAN)',
-      contexts: ['action'],
-      parentId: 'media-player',
-      type: 'radio',
-      checked: prefs['media-player'] === 'VLC'
-    });
-    create({
-      id: 'media-player-POT',
-      title: 'PotPlayer (Windows Only)',
-      contexts: ['action'],
-      parentId: 'media-player',
-      type: 'radio',
-      checked: prefs['media-player'] === 'POT'
-    });
-    create({
-      id: 'media-player-QMP',
-      title: 'QMPlay2',
-      contexts: ['action'],
-      parentId: 'media-player',
-      type: 'radio',
-      checked: prefs['media-player'] === 'QMP'
-    });
+  });
+  create({
+    id: 'media-player-VLC',
+    title: 'VLC (VideoLAN)',
+    contexts: ['action'],
+    parentId: 'media-player',
+    type: 'radio',
+    checked: prefs['media-player'] === 'VLC'
+  });
+  create({
+    id: 'media-player-POT',
+    title: 'PotPlayer (Windows Only)',
+    contexts: ['action'],
+    parentId: 'media-player',
+    type: 'radio',
+    checked: prefs['media-player'] === 'POT'
+  });
+  create({
+    id: 'media-player-QMP',
+    title: 'QMPlay2',
+    contexts: ['action'],
+    parentId: 'media-player',
+    type: 'radio',
+    checked: prefs['media-player'] === 'QMP'
   });
   if (isFF === false) {
     create({
@@ -91,9 +85,10 @@ const context = () => {
     });
   }
 };
-context.link = () => chrome.storage.local.get({
-  'media-types': TYPES
-}, prefs => {
+context.link = async () => {
+  const prefs = await chrome.storage.local.get({
+    'media-types': TYPES
+  });
   chrome.contextMenus.remove('link', () => {
     chrome.runtime.lastError;
     const types = prefs['media-types'];
@@ -113,23 +108,34 @@ context.link = () => chrome.storage.local.get({
       });
     }
   });
-});
-chrome.runtime.onStartup.addListener(context);
-chrome.runtime.onInstalled.addListener(context);
+};
+{
+  const once = () => {
+    if (once.done) {
+      return;
+    }
+    once.done = true;
+
+    context();
+  };
+  chrome.runtime.onStartup.addListener(once);
+  chrome.runtime.onInstalled.addListener(once);
+}
 chrome.storage.onChanged.addListener(ps => {
   if (ps['media-types']) {
     context.link();
   }
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'copy-links') {
-    chrome.scripting.executeScript({
-      target: {
-        tabId: tab.id
-      },
-      func: () => self.links ? [...self.links.keys()] : []
-    }).then(r => {
+    try {
+      const r = await chrome.scripting.executeScript({
+        target: {
+          tabId: tab.id
+        },
+        func: () => self.links ? [...self.links.keys()] : []
+      });
       const links = r[0]?.result || [];
       if (links.length) {
         copy(tab.id, links.join('\n'));
@@ -137,12 +143,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       else {
         notify('There is no media link for this page', tab.id);
       }
-    }).catch(e => notify(e.message, tab.id));
+    }
+    catch (e) {
+      console.error(e);
+      notify(e.message, tab.id);
+    }
   }
   else if (info.menuItemId === 'page-link') {
-    chrome.storage.local.get({
-      'runtime': 'com.add0n.node'
-    }, prefs => open(tab, tab.id, tab.url));
+    open(tab, tab.id, tab.url);
   }
   else if (info.menuItemId === 'mp3-converter') {
     chrome.tabs.create({
@@ -160,13 +168,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   else if (info.menuItemId.startsWith('media-player-')) {
     const id = info.menuItemId.replace('media-player-', '');
     const key = 'path-' + id;
-    chrome.storage.local.get({
+    const prefs = await chrome.storage.local.get({
       [key]: ''
-    }, prefs => {
-      chrome.storage.local.set({
-        'media-player': id,
-        'path': prefs[key]
-      });
+    });
+    chrome.storage.local.set({
+      'media-player': id,
+      'path': prefs[key]
     });
   }
   else {

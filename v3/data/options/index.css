@@ -1,30 +1,27 @@
 :root {
-  --clr: #4d5156;
-  --bg: #fff;
-  --link: #0374ff;
+  --clr: light-dark(#4d5156, #bdc6cf);
+  --bg: light-dark(#fff, #202124);
+  --link: light-dark(#0374ff, #9ac8ff);
+  --bg-alt: light-dark(#ffeee2, #3a3a3a);
 
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --clr: #bdc6cf;
-    --bg: #202124;
-    --link: #9ac8ff;
-
-    color-scheme: dark;
-  }
+  color-scheme: light dark;
 }
 
 body {
   font-size: 14px;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   background-color: var(--bg);
   color: var(--clr);
   width: min(100% - 2rem, 70rem);
   margin-inline: auto;
 }
-
+h1 {
+  text-align: center;
+  background-color: var(--bg-alt);
+  padding: 20px;
+  font-weight: normal;
+  font-size: 20px;
+}
 button,
 input[type=submit],
 input[type=button] {
@@ -36,6 +33,7 @@ input[type=button] {
 }
 button,
 textarea,
+select,
 input {
   border: solid 1px rgba(0, 0, 0, 0.25);
 }
@@ -46,6 +44,8 @@ textarea {
   width: 100%;
   box-sizing: border-box;
   display: block;
+  field-sizing: content;
+  max-height: 10lh;
 }
 textarea,
 input[type=text],
@@ -72,6 +72,7 @@ code {
 }
 select {
   padding: 3px 5px;
+  field-sizing: content;
 }
 .one {
   display: grid;
